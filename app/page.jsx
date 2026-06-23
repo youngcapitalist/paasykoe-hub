@@ -1,93 +1,67 @@
-// Pääsykoe.fi — virallisen yliopistohaku/Opintopolku-tyylin mukainen pohja.
-// Teksti on toistaiseksi lorem ipsumia; fokus on UI:ssa ja tyyleissä.
+// Pääsykoe.fi — riippumaton tietopankki yliopistojen kansallisista valintakokeista.
+// Semanttinen HTML (h1/h2/h3/p), virallinen ilme, JSON-LD (FAQPage) SEO:ta varten.
 
-/* ---------- pienet ikoni-/merkkikomponentit ---------- */
+/* ---------------- ikonit / merkit ---------------- */
 function Logo({ className = "h-11 w-11" }) {
-  // Square-frame + keltainen ympyrä (virallisen tunnuksen henki)
   return (
     <svg viewBox="0 0 48 48" className={className} aria-hidden>
-      <path
-        d="M6 18V8a2 2 0 0 1 2-2h10"
-        fill="none"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="square"
-      />
-      <path
-        d="M42 30v10a2 2 0 0 1-2 2H30"
-        fill="none"
-        stroke="white"
-        strokeWidth="3"
-        strokeLinecap="square"
-      />
+      <path d="M6 18V8a2 2 0 0 1 2-2h10" fill="none" stroke="white" strokeWidth="3" strokeLinecap="square" />
+      <path d="M42 30v10a2 2 0 0 1-2 2H30" fill="none" stroke="white" strokeWidth="3" strokeLinecap="square" />
       <circle cx="24" cy="26" r="11" fill="#FFC600" />
     </svg>
   );
 }
-
-function ArrowCircle() {
-  return (
-    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/40">
-      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M5 12h14M13 6l6 6-6 6" />
-      </svg>
-    </span>
-  );
-}
-
 function SearchIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <circle cx="11" cy="11" r="7" />
-      <path d="M21 21l-4.3-4.3" />
+      <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
     </svg>
   );
 }
-
-const FlagFI = () => (
-  <svg viewBox="0 0 18 12" className="h-3 w-[18px] rounded-[2px] ring-1 ring-white/20">
-    <rect width="18" height="12" fill="#fff" />
-    <rect x="5" width="3" height="12" fill="#0A2540" />
-    <rect y="4.5" width="18" height="3" fill="#0A2540" />
-  </svg>
-);
-const FlagSE = () => (
-  <svg viewBox="0 0 18 12" className="h-3 w-[18px] rounded-[2px] ring-1 ring-white/20">
-    <rect width="18" height="12" fill="#0A2540" />
-    <rect x="5" width="3" height="12" fill="#FFC600" />
-    <rect y="4.5" width="18" height="3" fill="#FFC600" />
-  </svg>
-);
-const FlagEN = () => (
-  <svg viewBox="0 0 18 12" className="h-3 w-[18px] rounded-[2px] ring-1 ring-white/20">
-    <rect width="18" height="12" fill="#0A2540" />
-    <path d="M0 0l18 12M18 0L0 12" stroke="#fff" strokeWidth="2" />
-    <path d="M9 0v12M0 6h18" stroke="#fff" strokeWidth="3" />
-    <path d="M9 0v12M0 6h18" stroke="#C8102E" strokeWidth="1.5" />
-  </svg>
-);
+const FlagFI = () => (<svg viewBox="0 0 18 12" className="h-3 w-[18px] rounded-[2px] ring-1 ring-white/20"><rect width="18" height="12" fill="#fff" /><rect x="5" width="3" height="12" fill="#0A2540" /><rect y="4.5" width="18" height="3" fill="#0A2540" /></svg>);
+const FlagSE = () => (<svg viewBox="0 0 18 12" className="h-3 w-[18px] rounded-[2px] ring-1 ring-white/20"><rect width="18" height="12" fill="#0A2540" /><rect x="5" width="3" height="12" fill="#FFC600" /><rect y="4.5" width="18" height="3" fill="#FFC600" /></svg>);
+const FlagEN = () => (<svg viewBox="0 0 18 12" className="h-3 w-[18px] rounded-[2px] ring-1 ring-white/20"><rect width="18" height="12" fill="#0A2540" /><path d="M0 0l18 12M18 0L0 12" stroke="#fff" strokeWidth="2" /><path d="M9 0v12M0 6h18" stroke="#fff" strokeWidth="3" /><path d="M9 0v12M0 6h18" stroke="#C8102E" strokeWidth="1.5" /></svg>);
 
 const NAV = ["Etusivu", "Koulutukset & hakeminen", "Todistusvalinta", "Valintakokeet", "Yhteystiedot"];
 
-/* ---------- yläpalkki ---------- */
+/* ---------------- data ---------------- */
+const EXAMS = [
+  { code: "A", field: "Kasvatusala ja psykologia", sisalto: "Soveltuvuuskoe ja aineistokoe.", alat: "Luokanopettaja, varhaiskasvatus, erityisopettaja, opinto-ohjaaja sekä psykologia ja logopedia." },
+  { code: "B", field: "Lääketieteelliset alat", sisalto: "Biologian, fysiikan ja kemian lukion oppimääriin perustuva koe.", alat: "Lääketiede, hammaslääketiede ja eläinlääketiede." },
+  { code: "C", field: "Tekniikka ja luonnontieteet", sisalto: "Matematiikan, fysiikan ja kemian ongelmanratkaisutaidot. Kokeessa on yhteinen osio ja eriytyviä osioita.", alat: "Insinööritieteet, tietojenkäsittely, fysiikka, kemia." },
+  { code: "D", field: "Kauppatieteet", sisalto: "Taloustiedon, matematiikan ja historian soveltaminen. Perustuu lukion oppimäärään ja ennakkomateriaaliin.", alat: "Kauppatieteet ja taloustiede." },
+  { code: "E", field: "Oikeustiede", sisalto: "Juridisen tiedon omaksuminen ja soveltaminen. Perustuu ennakkoon julkaistavaan aineistoon.", alat: "Oikeustiede (Helsinki, Turku, Joensuu, Rovaniemi)." },
+  { code: "F", field: "Yhteiskuntatieteet", sisalto: "Yhteiskuntaopin ja historian oppimääriin sekä aineistoon perustuva koe.", alat: "Valtio-oppi, sosiologia, viestintä." },
+  { code: "G", field: "Kielet ja viestintä", sisalto: "Kielellinen päättely ja aineiston ymmärtäminen.", alat: "Vieraat kielet, käännöstiede." },
+  { code: "H", field: "Humanistiset tieteet", sisalto: "Aineistokoe, joka mittaa kulttuurista ja historiallista ymmärrystä.", alat: "Historia, kulttuurintutkimus, taiteiden tutkimus." },
+  { code: "I", field: "Liikunta- ja terveystieteet", sisalto: "Terveystiedon oppimäärä ja fyysiset soveltuvuuskokeet (alakohtainen).", alat: "Liikuntapedagogiikka, fysioterapia." },
+];
+
+const FAQ = [
+  { q: "Voinko osallistua useampaan valintakokeeseen?", a: "Kyllä. Voit hakea usealle eri koulutusalalle ja osallistua niitä vastaaviin kokeisiin. Huomioi kuitenkin koepäivien mahdolliset päällekkäisyydet kevään aikatauluissa." },
+  { q: "Ovatko kokeet digitaalisia?", a: "Kyllä, kaikki yhdeksän kansallista valintakoetta tehdään digitaalisesti omalla kannettavalla tietokoneella valvotussa koetilanteessa." },
+  { q: "Mitä eroa on todistusvalinnalla ja valintakokeella?", a: "Todistusvalinnassa opiskelupaikka myönnetään suoraan ylioppilastutkintotodistuksen arvosanojen perusteella. Valintakokeella valitaan ne hakijat (noin 50 %), jotka eivät saaneet paikkaa todistuksella tai jotka eivät ole ylioppilaita." },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
+/* ---------------- yläpalkki ---------------- */
 function TopNav() {
   return (
     <header className="bg-navy text-white">
       <div className="mx-auto flex h-[88px] max-w-site items-center gap-8 px-6 md:px-8">
-        <a href="#" className="flex shrink-0 items-center" aria-label="Pääsykoe.fi">
-          <Logo />
-        </a>
-        <nav className="hidden flex-1 items-center gap-7 lg:flex">
+        <a href="#" className="flex shrink-0 items-center" aria-label="Pääsykoe.fi"><Logo /></a>
+        <nav className="hidden flex-1 items-center gap-7 lg:flex" aria-label="Päävalikko">
           {NAV.map((item, i) => (
-            <a
-              key={item}
-              href="#"
-              className={`font-heading text-[15px] font-semibold transition-colors ${
-                i === 3 ? "text-gold" : "text-white/90 hover:text-gold"
-              }`}
-            >
-              {item}
-            </a>
+            <a key={item} href="#" className={`font-heading text-[15px] font-semibold transition-colors ${i === 3 ? "text-gold" : "text-white/90 hover:text-gold"}`}>{item}</a>
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-4">
@@ -96,139 +70,58 @@ function TopNav() {
             <button aria-label="På svenska"><FlagSE /></button>
             <button aria-label="In English"><FlagEN /></button>
           </div>
-          <button aria-label="Haku" className="ml-2 text-white/90 hover:text-gold">
-            <SearchIcon />
-          </button>
+          <button aria-label="Haku" className="ml-2 text-white/90 hover:text-gold"><SearchIcon /></button>
         </div>
       </div>
     </header>
   );
 }
 
-/* ---------- hero ---------- */
+/* ---------------- hero ---------------- */
 function Hero() {
   return (
     <section className="relative overflow-hidden bg-white">
-      {/* keltainen ympyrä bleedaa vasemmalta */}
-      <div className="pointer-events-none absolute -left-40 top-1/2 -z-0 h-[640px] w-[640px] -translate-y-1/2 rounded-full bg-gold" />
-      <div className="relative z-10 mx-auto grid max-w-site items-center gap-10 px-6 py-16 md:px-8 md:py-24 lg:grid-cols-2">
-        <div>
-          <h1 className="font-heading text-5xl font-extrabold leading-[1.05] tracking-tight text-navy md:text-6xl lg:text-7xl">
-            Opiskelijaksi
-            <br />
-            yliopistoon?
-          </h1>
-          <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <a
-              href="#"
-              className="inline-flex items-center justify-between gap-4 rounded-pill bg-navy py-3.5 pl-7 pr-3.5 font-heading text-[15px] font-semibold text-white shadow-sm transition-colors hover:bg-navy-dark"
-            >
-              Tutustu todistusvalinnan pisteytyksiin
-              <ArrowCircle />
-            </a>
-            <a
-              href="#"
-              className="inline-flex items-center justify-between gap-4 rounded-pill bg-navy py-3.5 pl-7 pr-3.5 font-heading text-[15px] font-semibold text-white shadow-sm transition-colors hover:bg-navy-dark"
-            >
-              Osallistu valintakokeeseen
-              <ArrowCircle />
-            </a>
-          </div>
-        </div>
-        {/* kuvapaikka */}
-        <div className="relative hidden lg:block">
-          <div className="aspect-[4/3] w-full rounded-2xl bg-mist ring-1 ring-line" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------- sivuotsikkokaista (esim. "Valintakokeet") ---------- */
-function PageHeader() {
-  return (
-    <section className="relative overflow-hidden bg-mist">
-      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-gold" />
-      <div className="relative z-10 mx-auto max-w-site px-6 py-16 md:px-8 md:py-20">
-        <h1 className="font-heading text-4xl font-extrabold tracking-tight text-navy md:text-6xl">
-          Valintakokeet
+      <div className="pointer-events-none absolute -left-40 top-0 -z-0 h-[560px] w-[560px] -translate-y-1/3 rounded-full bg-gold" />
+      <div className="relative z-10 mx-auto max-w-site px-6 py-16 md:px-8 md:py-24">
+        <h1 className="max-w-4xl font-heading text-4xl font-extrabold leading-[1.08] tracking-tight text-navy md:text-6xl">
+          Yliopistojen kansalliset valintakokeet 2026–2027
         </h1>
+        <p className="mt-8 max-w-3xl text-lg leading-relaxed text-navy/85 md:text-xl">
+          Yliopistot järjestävät yhdeksän kansallista valintakoetta (eli pääsykoetta). Kansalliset
+          valintakokeet ovat digitaalisia ja ne suoritetaan omalla kannettavalla tietokoneella yliopiston
+          tiloissa. Tälle sivulle on koottu riippumaton ja ajantasainen tietopankki uudistuneista
+          valintakokeista, koesisällöistä ja niihin valmistautumisesta. Valintakokeilla valitaan noin puolet
+          uusista opiskelijoista kanditason opintoihin.
+        </p>
       </div>
     </section>
   );
 }
 
-/* ---------- valintakokeet: info per koe + hienovarainen valmennuslinkki ---------- */
-const EXAMS = [
-  {
-    code: "F",
-    field: "Kauppatieteellinen ala",
-    desc: "Kauppatieteiden kandidaattikoulutusten yhteisvalinta. Mukana mm. Aalto-yliopiston kauppakorkeakoulu, Hanken, Tampere, Turku, Jyväskylä, LUT, Oulu, Vaasa ja Itä-Suomen yliopisto.",
-    href: "https://valintakoefpro.com",
-    prep: "Harjoitustehtävät ja koesimulaatiot",
-  },
-  {
-    code: "A",
-    field: "Tekniikka ja luonnontieteet",
-    desc: "Tekniikan ja luonnontieteiden alojen valintakoe. Käytössä useiden yliopistojen diplomi-insinööri- ja luonnontieteiden hauissa.",
-    href: "https://valintakoea.fi",
-    prep: "Harjoitustehtävät ja koesimulaatiot",
-  },
-  {
-    code: "B",
-    field: "Lääketiede ja bioalat",
-    desc: "Lääketieteellisten alojen ja bioalojen valintakoe. Mittaa luonnontieteellistä osaamista ja soveltamiskykyä.",
-    href: "https://valintakoeb.fi",
-    prep: "Harjoitustehtävät ja koesimulaatiot",
-  },
-  {
-    code: "C",
-    field: "Luonnonvara- ja ympäristöalat",
-    desc: "Luonnonvara-, ympäristö- ja maataloustieteellisten alojen valintakoe.",
-    href: "https://valintakoec.fi",
-    prep: "Harjoitustehtävät ja koesimulaatiot",
-  },
-  {
-    code: "E",
-    field: "Kasvatustieteet",
-    desc: "Kasvatusalan valintakoe (VAKAVA-koe). Käytössä kasvatustieteellisten alojen yhteisvalinnassa.",
-    href: "https://valintakoee.fi",
-    prep: "Harjoitustehtävät ja koesimulaatiot",
-  },
-];
-
-function ExamList() {
+/* ---------------- yhdeksän koetta (grid) ---------------- */
+function ExamGrid() {
   return (
-    <section className="bg-white py-14 md:py-20">
+    <section className="bg-white py-14 md:py-20" aria-labelledby="kokeet-otsikko">
       <div className="mx-auto max-w-site px-6 md:px-8">
-        <p className="mb-10 max-w-3xl text-[17px] leading-relaxed text-navy/80">
-          Yliopistot järjestävät kansallisia valintakokeita (pääsykokeita) koulutusaloittain.
-          Alla on koottu, mille aloille kullakin kokeella voi hakea sekä mistä löydät
-          valmistautumismateriaalia.
-        </p>
-        <div className="divide-y divide-line overflow-hidden rounded-2xl border border-line">
+        <h2 id="kokeet-otsikko" className="font-heading text-3xl font-extrabold tracking-tight text-navy md:text-4xl">
+          Yhdeksän kansallista valintakoetta
+        </h2>
+        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {EXAMS.map((e) => (
-            <article key={e.code} className="grid gap-5 bg-white p-6 md:grid-cols-[auto_1fr] md:gap-7 md:p-8">
-              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-navy font-heading text-2xl font-extrabold text-gold">
-                {e.code}
-              </div>
-              <div>
-                <h3 className="font-heading text-xl font-bold text-navy">
-                  Koe {e.code} — {e.field}
+            <article key={e.code} className="flex flex-col rounded-2xl border border-line bg-white p-6 transition-shadow hover:shadow-[0_8px_30px_-12px_rgba(10,37,64,0.18)]">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-navy font-heading text-xl font-extrabold text-gold">{e.code}</span>
+                <h3 className="font-heading text-lg font-bold leading-snug text-navy">
+                  Valintakoe {e.code}
+                  <span className="block text-sm font-semibold text-navy/60">{e.field}</span>
                 </h3>
-                <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-navy/75">
-                  {e.desc}
-                </p>
-                <a
-                  href={e.href}
-                  className="mt-4 inline-flex items-center gap-1.5 text-[15px] font-semibold text-navy underline decoration-gold decoration-2 underline-offset-4 hover:text-navy-light"
-                >
-                  {e.prep}
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </a>
               </div>
+              <p className="text-[15px] leading-relaxed text-navy/80">
+                <strong className="font-semibold text-navy">Sisältö:</strong> {e.sisalto}
+              </p>
+              <p className="mt-3 text-[15px] leading-relaxed text-navy/80">
+                <strong className="font-semibold text-navy">Koulutusalat:</strong> {e.alat}
+              </p>
             </article>
           ))}
         </div>
@@ -237,46 +130,53 @@ function ExamList() {
   );
 }
 
-/* ---------- navy infolaatikko ---------- */
-function InfoBox() {
+/* ---------------- valmistautuminen ---------------- */
+function Preparation() {
   return (
-    <section className="bg-white pb-16 md:pb-20">
+    <section className="bg-mist py-14 md:py-20" aria-labelledby="valmistautuminen-otsikko">
       <div className="mx-auto max-w-site px-6 md:px-8">
-        <div className="rounded-2xl bg-navy px-6 py-12 text-center text-white md:px-16 md:py-16">
-          <h2 className="font-heading text-2xl font-bold md:text-3xl">
-            Lorem ipsum dolor sit amet consectetur
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-[15px] leading-relaxed text-white/80">
-            Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-            doloremque laudantium, totam rem aperiam. <span className="font-semibold text-gold">Lorem ipsum dolor</span>.
-            Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.
-          </p>
-          <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-relaxed text-white/80">
-            Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur,
-            adipisci velit, sed quia non numquam eius modi tempora incidunt.
-          </p>
+        <h2 id="valmistautuminen-otsikko" className="font-heading text-3xl font-extrabold tracking-tight text-navy md:text-4xl">
+          Miten valintakokeisiin kannattaa valmistautua?
+        </h2>
+        <p className="mt-6 max-w-3xl text-lg leading-relaxed text-navy/85">
+          Vaikka uudet valintakokeet perustuvat vahvemmin lukion oppimääriin (kuten LOPS 2021), aineistojen
+          soveltaminen on edelleen keskiössä. Riippumattomien tilastojen mukaan järjestelmällinen
+          valmistautuminen, vanhojen kokeiden simulointi ja oikeanlaisen vastaustekniikan harjoittelu ovat
+          ratkaisevassa asemassa sisäänpääsyssä.
+        </p>
+
+        {/* Tila myöhemmälle komponentille: "Katso asiantuntijoiden suosittelemat valmennusmateriaalit ja VIP-paketit" */}
+        <div
+          id="valmennusmateriaalit"
+          data-slot="valmennusmateriaalit"
+          className="mt-10 rounded-2xl border-2 border-dashed border-line bg-white/60 px-6 py-10 text-center text-sm text-navy/40"
+        >
+          Tähän lisätään myöhemmin: suositellut valmennusmateriaalit ja VIP-paketit.
         </div>
       </div>
     </section>
   );
 }
 
-/* ---------- yliopistologot ---------- */
-function LogoGrid() {
+/* ---------------- FAQ (accordion, native <details>) ---------------- */
+function Faq() {
   return (
-    <section className="bg-white pb-20">
-      <div className="mx-auto max-w-site px-6 md:px-8">
-        <p className="mx-auto mb-12 max-w-3xl text-center text-[17px] leading-relaxed text-navy/80">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-          incididunt ut labore et dolore magna aliqua hakijoille.
-        </p>
-        <div className="grid grid-cols-2 items-center gap-x-8 gap-y-12 sm:grid-cols-3 lg:grid-cols-5">
-          {Array.from({ length: 14 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-center">
-              <div className="grid h-16 w-full max-w-[150px] place-items-center rounded-lg bg-mist text-xs font-semibold uppercase tracking-wider text-navy/30">
-                Logo
-              </div>
-            </div>
+    <section className="bg-white py-14 md:py-20" aria-labelledby="faq-otsikko">
+      <div className="mx-auto max-w-3xl px-6 md:px-8">
+        <h2 id="faq-otsikko" className="font-heading text-3xl font-extrabold tracking-tight text-navy md:text-4xl">
+          Usein kysytyt kysymykset
+        </h2>
+        <div className="mt-8 divide-y divide-line overflow-hidden rounded-2xl border border-line">
+          {FAQ.map((f) => (
+            <details key={f.q} className="group bg-white">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 font-heading text-base font-semibold text-navy">
+                {f.q}
+                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-navy/5 text-navy transition-transform group-open:rotate-45">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+                </span>
+              </summary>
+              <p className="px-6 pb-6 text-[15px] leading-relaxed text-navy/80">{f.a}</p>
+            </details>
           ))}
         </div>
       </div>
@@ -284,12 +184,12 @@ function LogoGrid() {
   );
 }
 
-/* ---------- footer ---------- */
+/* ---------------- footer ---------------- */
 function Footer() {
   const cols = [
-    ["Koulutukset & hakeminen", ["Lorem ipsum", "Dolor sit amet", "Consectetur"]],
-    ["Todistusvalinta", ["Adipiscing elit", "Sed do eiusmod", "Tempor"]],
-    ["Valintakokeet", ["Ut labore", "Et dolore", "Magna aliqua"]],
+    ["Koulutukset & hakeminen", ["Hakeminen", "Aikataulut", "Hakukohteet"]],
+    ["Todistusvalinta", ["Pisteytys", "Vertailu", "Usein kysyttyä"]],
+    ["Valintakokeet", ["Yhdeksän koetta", "Valmistautuminen", "FAQ"]],
   ];
   return (
     <footer className="bg-navy text-white">
@@ -297,28 +197,20 @@ function Footer() {
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.
+            Riippumaton tietopankki yliopistojen kansallisista valintakokeista 2026–2027.
           </p>
         </div>
         {cols.map(([title, links]) => (
-          <div key={title}>
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold">
-              {title}
-            </h3>
+          <nav key={title} aria-label={title}>
+            <h2 className="font-heading text-sm font-bold uppercase tracking-wider text-gold">{title}</h2>
             <ul className="mt-4 space-y-2.5 text-sm text-white/75">
-              {links.map((l) => (
-                <li key={l}>
-                  <a href="#" className="hover:text-white">{l}</a>
-                </li>
-              ))}
+              {links.map((l) => (<li key={l}><a href="#" className="hover:text-white">{l}</a></li>))}
             </ul>
-          </div>
+          </nav>
         ))}
       </div>
       <div className="border-t border-white/10">
-        <div className="mx-auto max-w-site px-6 py-5 text-xs text-white/50 md:px-8">
-          © 2026 Pääsykoe.fi — Lorem ipsum dolor sit amet.
-        </div>
+        <div className="mx-auto max-w-site px-6 py-5 text-xs text-white/50 md:px-8">© 2026 Pääsykoe.fi — riippumaton tietopankki.</div>
       </div>
     </footer>
   );
@@ -326,14 +218,20 @@ function Footer() {
 
 export default function Page() {
   return (
-    <main>
-      <TopNav />
-      <Hero />
-      <PageHeader />
-      <ExamList />
-      <InfoBox />
-      <LogoGrid />
-      <Footer />
-    </main>
+    <>
+      {/* JSON-LD (FAQPage) SEO:ta varten */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <main>
+        <TopNav />
+        <Hero />
+        <ExamGrid />
+        <Preparation />
+        <Faq />
+        <Footer />
+      </main>
+    </>
   );
 }
