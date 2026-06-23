@@ -158,25 +158,79 @@ function PageHeader() {
   );
 }
 
-/* ---------- sisältölaatikko (teksti + kuva) ---------- */
-function ContentBlock() {
+/* ---------- valintakokeet: info per koe + hienovarainen valmennuslinkki ---------- */
+const EXAMS = [
+  {
+    code: "F",
+    field: "Kauppatieteellinen ala",
+    desc: "Kauppatieteiden kandidaattikoulutusten yhteisvalinta. Mukana mm. Aalto-yliopiston kauppakorkeakoulu, Hanken, Tampere, Turku, Jyväskylä, LUT, Oulu, Vaasa ja Itä-Suomen yliopisto.",
+    href: "https://valintakoefpro.com",
+    prep: "Harjoitustehtävät ja koesimulaatiot",
+  },
+  {
+    code: "A",
+    field: "Tekniikka ja luonnontieteet",
+    desc: "Tekniikan ja luonnontieteiden alojen valintakoe. Käytössä useiden yliopistojen diplomi-insinööri- ja luonnontieteiden hauissa.",
+    href: "https://valintakoea.fi",
+    prep: "Harjoitustehtävät ja koesimulaatiot",
+  },
+  {
+    code: "B",
+    field: "Lääketiede ja bioalat",
+    desc: "Lääketieteellisten alojen ja bioalojen valintakoe. Mittaa luonnontieteellistä osaamista ja soveltamiskykyä.",
+    href: "https://valintakoeb.fi",
+    prep: "Harjoitustehtävät ja koesimulaatiot",
+  },
+  {
+    code: "C",
+    field: "Luonnonvara- ja ympäristöalat",
+    desc: "Luonnonvara-, ympäristö- ja maataloustieteellisten alojen valintakoe.",
+    href: "https://valintakoec.fi",
+    prep: "Harjoitustehtävät ja koesimulaatiot",
+  },
+  {
+    code: "E",
+    field: "Kasvatustieteet",
+    desc: "Kasvatusalan valintakoe (VAKAVA-koe). Käytössä kasvatustieteellisten alojen yhteisvalinnassa.",
+    href: "https://valintakoee.fi",
+    prep: "Harjoitustehtävät ja koesimulaatiot",
+  },
+];
+
+function ExamList() {
   return (
     <section className="bg-white py-14 md:py-20">
       <div className="mx-auto max-w-site px-6 md:px-8">
-        <div className="grid items-stretch gap-6 rounded-2xl bg-mist p-6 md:grid-cols-2 md:p-10">
-          <div className="space-y-5 text-[17px] leading-relaxed text-navy/85">
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-              tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-              quis nostrud exercitation.
-            </p>
-            <p>
-              Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-              eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt
-              in culpa qui officia deserunt mollit anim id est laborum.
-            </p>
-          </div>
-          <div className="aspect-[16/11] w-full rounded-xl bg-white ring-1 ring-line" />
+        <p className="mb-10 max-w-3xl text-[17px] leading-relaxed text-navy/80">
+          Yliopistot järjestävät kansallisia valintakokeita (pääsykokeita) koulutusaloittain.
+          Alla on koottu, mille aloille kullakin kokeella voi hakea sekä mistä löydät
+          valmistautumismateriaalia.
+        </p>
+        <div className="divide-y divide-line overflow-hidden rounded-2xl border border-line">
+          {EXAMS.map((e) => (
+            <article key={e.code} className="grid gap-5 bg-white p-6 md:grid-cols-[auto_1fr] md:gap-7 md:p-8">
+              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-navy font-heading text-2xl font-extrabold text-gold">
+                {e.code}
+              </div>
+              <div>
+                <h3 className="font-heading text-xl font-bold text-navy">
+                  Koe {e.code} — {e.field}
+                </h3>
+                <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-navy/75">
+                  {e.desc}
+                </p>
+                <a
+                  href={e.href}
+                  className="mt-4 inline-flex items-center gap-1.5 text-[15px] font-semibold text-navy underline decoration-gold decoration-2 underline-offset-4 hover:text-navy-light"
+                >
+                  {e.prep}
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </a>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
     </section>
@@ -276,7 +330,7 @@ export default function Page() {
       <TopNav />
       <Hero />
       <PageHeader />
-      <ContentBlock />
+      <ExamList />
       <InfoBox />
       <LogoGrid />
       <Footer />
