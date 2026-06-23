@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy: #0a2540;
+  --gold: #ffc600;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-navy font-body antialiased;
+}
+
+/* Virallinen, selkeä otsikkotyyli */
+h1, h2, h3 {
+  @apply font-heading;
+}
