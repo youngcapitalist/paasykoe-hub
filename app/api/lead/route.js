@@ -1,7 +1,7 @@
 // Liidien vastaanotto tasotestistä.
-// Jos ympäristömuuttuja LEAD_WEBHOOK_URL on asetettu (esim. Zapier/Make/CRM),
-// liidi lähetetään sinne. Muuten se kirjataan lokiin (näkyy palvelulokeissa).
-// Payload sisältää preferredField + preferredCode liidiryhmittelyä varten.
+// Tallennus järjestyksessä: 1) Supabase (jos SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY),
+// 2) webhook (LEAD_WEBHOOK_URL, esim. Zapier/Make/CRM), 3) loki.
+// Payload sisältää preferred_field + preferred_code liidiryhmittelyä varten.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,6 +36,44 @@ export async function POST(request) {
     receivedAt: new Date().toISOString(),
   };
 
+  // 1) Supabase
+  const supaUrl = process.env.SUPABASE_URL;
+  const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (supaUrl && supaKey) {
+    try {
+      const res = await fetch(`${supaUrl}/rest/v1/leads`, {
+        method: "POST",
+        headers: {
+          apikey: supaKey,
+          Authorization: `Bearer ${supaKey}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          email: lead.email,
+          name: lead.name,
+          preferred_code: lead.preferredCode,
+          preferred_field: lead.preferredField,
+          recommended_code: lead.recommendedCode,
+          recommended_field: lead.recommendedField,
+          pain_key: lead.painKey,
+          scores: lead.scores,
+          source: lead.source,
+        }),
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        console.error("[LEAD] supabase failed", res.status, txt);
+        return Response.json({ error: "supabase_failed" }, { status: 502 });
+      }
+      return Response.json({ ok: true });
+    } catch (err) {
+      console.error("[LEAD] supabase error", err);
+      return Response.json({ error: "supabase_error" }, { status: 502 });
+    }
+  }
+
+  // 2) Webhook
   const webhook = process.env.LEAD_WEBHOOK_URL;
   if (webhook) {
     try {
@@ -53,7 +91,7 @@ export async function POST(request) {
       return Response.json({ error: "webhook_error" }, { status: 502 });
     }
   } else {
-    // Ei webhookia konfiguroituna — kirjataan lokiin, jotta liidi ei katoa.
+    // 3) Ei tallennusta konfiguroituna — kirjataan lokiin, jotta liidi ei katoa.
     console.log("[LEAD]", JSON.stringify(lead));
   }
 
