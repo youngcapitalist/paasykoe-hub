@@ -1,6 +1,8 @@
 // Pääsykoe.fi — riippumaton tietopankki yliopistojen kansallisista valintakokeista.
 // Semanttinen HTML (h1/h2/h3/p), virallinen ilme, JSON-LD (FAQPage) SEO:ta varten.
 
+import { COURSES } from "./courses";
+
 /* ---------------- ikonit / merkit ---------------- */
 function Logo({ className = "h-11 w-11" }) {
   return (
@@ -35,106 +37,6 @@ const EXAMS = [
   { code: "G", field: "Oikeus- ja yhteiskuntatieteet", alat: "Hallintotiede, oikeustiede, sosiaalitieteet, viestintätieteet ja yhteiskuntatieteet sekä liikunnan yhteiskuntatieteet." },
   { code: "H", field: "Humanistiset tieteet", alat: "Filosofia, historia, kulttuurien tutkimus, taiteiden tutkimus ja teologia." },
   { code: "I", field: "Kielet", alat: "Kielet, kielitieteet ja kirjallisuustieteet." },
-];
-
-// Kurssilinkit ja -tiedot. Hinnat, paikat ja sulkeutumispäivät ovat vielä
-// vahvistamattomia esimerkkejä — päivitä omilla luvuillasi.
-const COURSES = [
-  {
-    code: "B",
-    field: "Lääketiede & hammaslääketiede",
-    title: "Lääkiksen valmennuskurssi 2027",
-    href: "https://valintakoeb.fi",
-    rating: 4.6,
-    price: "149 €",
-    oldPrice: "299 €",
-    vipPrice: "499 €",
-    vipOldPrice: "699 €",
-    seatsLeft: 7,
-    closing: "Ilmoittautuminen sulkeutuu 31.1.",
-    popular: true,
-    perks: [
-      "Yli 1 200 koetehtävää ja 12 simuloitua koetta",
-      "Henkilökohtainen palaute alan opettajilta",
-      "Viikoittaiset live-klinikat ja tallenteet",
-    ],
-  },
-  {
-    code: "E",
-    field: "Kasvatusala & liikuntapedagogiikka",
-    title: "Kasvatusalan valmennuskurssi 2027",
-    href: "https://valintakoee.fi",
-    rating: 4.6,
-    price: "99 €",
-    oldPrice: "199 €",
-    vipPrice: "149 €",
-    vipOldPrice: "249 €",
-    seatsLeft: 12,
-    closing: "Vain kevään ryhmä jäljellä",
-    popular: false,
-    perks: [
-      "Soveltuvuus- ja aineistokoe harjoiteltuna rinnakkain",
-      "Viikoittaiset live-klinikat ja tallenteet",
-      "Aiempien vuosien mallivastaukset analysoituna",
-    ],
-  },
-  {
-    code: "F",
-    field: "Kauppatieteet",
-    title: "Kauppiksen valmennuskurssi 2027",
-    href: "https://valintakoefpro.com",
-    rating: 4.6,
-    price: "99 €",
-    oldPrice: "199 €",
-    vipPrice: "149 €",
-    vipOldPrice: "249 €",
-    seatsLeft: 9,
-    closing: "Early bird -hinta päättyy pian",
-    popular: false,
-    perks: [
-      "Matematiikka, taloustieto ja historia yhdessä paketissa",
-      "Ennakkomateriaalin tiivistykset ja muistilistat",
-      "Mentorina alalle juuri tällä kurssilla päässyt opiskelija",
-    ],
-  },
-  {
-    code: "A",
-    field: "Tekniikka & luonnontieteet (DI)",
-    title: "Tekniikan ja DI-valintakokeen valmennuskurssi 2027",
-    href: "https://valintakoea.fi",
-    rating: 4.6,
-    price: "99 €",
-    oldPrice: "199 €",
-    vipPrice: "149 €",
-    vipOldPrice: "249 €",
-    seatsLeft: 15,
-    closing: "Ryhmäkoko rajattu henkilökohtaisen ohjauksen vuoksi",
-    popular: false,
-    perks: [
-      "Matematiikan, fysiikan ja kemian ongelmanratkaisu",
-      "Yhteinen osio ja eriytyvät osiot harjoiteltuna",
-      "Viikoittaiset live-klinikat ja tallenteet",
-    ],
-  },
-  {
-    code: "C",
-    field: "Biologia & ympäristötieteet",
-    title: "Biologian ja luonnontieteiden valmennuskurssi 2027",
-    href: "https://valintakoec.fi",
-    rating: 4.6,
-    price: "99 €",
-    oldPrice: "199 €",
-    vipPrice: "149 €",
-    vipOldPrice: "249 €",
-    seatsLeft: 11,
-    closing: "Kevään ryhmän paikat täyttyvät",
-    popular: false,
-    perks: [
-      "Biologian ja ympäristötieteiden ydinsisällöt haltuun",
-      "Aineistotehtävien analysointi ja vastaustekniikka",
-      "Viikoittaiset live-klinikat ja tallenteet",
-    ],
-  },
 ];
 
 const FAQ = [
@@ -392,15 +294,16 @@ function Courses() {
         <div>
           <h4 className="font-heading text-lg font-bold text-gold">Et ole vielä varma alasta?</h4>
           <p className="mt-1 max-w-xl text-sm leading-relaxed text-white/80">
-            Lataa veloituksetta tasotesti ja katso jo tänään, kuinka lähellä sisäänpääsyä olet. Ilman
-            sitoutumista — mutta useimmat aloittavat juuri tästä.
+            Tee maksuton tasotesti 2 minuutissa ja saat henkilökohtaisen suosituksen sinulle parhaiten
+            sopivasta alasta, koulutuksesta ja valmennuskurssista. Ilman sitoutumista — mutta useimmat
+            aloittavat juuri tästä.
           </p>
         </div>
         <a
-          href="#"
+          href="/tasotesti"
           className="inline-flex shrink-0 items-center gap-2 rounded-pill bg-gold px-5 py-3 font-heading text-sm font-bold text-navy transition-colors hover:bg-gold-dark"
         >
-          Lataa ilmainen tasotesti
+          Tee ilmainen tasotesti
         </a>
       </div>
     </div>
