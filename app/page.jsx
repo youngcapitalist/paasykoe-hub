@@ -225,6 +225,10 @@ function ExamGrid() {
               <p className="text-[15px] leading-relaxed text-navy/80">
                 <strong className="font-semibold text-navy">Koulutusalat:</strong> {e.alat}
               </p>
+              <p className="mt-4 inline-flex items-center gap-2 rounded-pill bg-mist px-3 py-1.5 text-xs font-semibold text-navy/70">
+                <span className="h-2 w-2 rounded-full bg-gold" />
+                Koeaika: kevät 2027 — päivämäärää ei ole vielä julkaistu
+              </p>
             </article>
           ))}
         </div>
