@@ -40,8 +40,11 @@ export async function POST(request) {
   const supaUrl = process.env.SUPABASE_URL;
   const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (supaUrl && supaKey) {
+    // Normalisoi: poista mahdollinen /rest/v1(/) ja loppukauttaviivat,
+    // jotta sekä perus-URL että REST-endpoint kelpaavat.
+    const base = supaUrl.replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
     try {
-      const res = await fetch(`${supaUrl}/rest/v1/leads`, {
+      const res = await fetch(`${base}/rest/v1/leads`, {
         method: "POST",
         headers: {
           apikey: supaKey,
