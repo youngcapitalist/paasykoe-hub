@@ -1,7 +1,11 @@
 // Liidien vastaanotto tasotestistä.
-// Tallennus järjestyksessä: 1) Supabase (jos SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY),
+// Tallennus järjestyksessä: 1) Supabase (jos SUPABASE_URL + SUPABASE_KEY),
 // 2) webhook (LEAD_WEBHOOK_URL, esim. Zapier/Make/CRM), 3) loki.
 // Payload sisältää preferred_field + preferred_code liidiryhmittelyä varten.
+//
+// Jaetussa Supabase-projektissa: käytä JULKISTA (publishable/anon) avainta
+// SUPABASE_KEY:ssä. Taulu paasykoe_leads + RLS (ks. supabase/leads.sql) sallii
+// vain rivin lisäyksen, ei pääsyä muihin tauluihin.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -38,13 +42,13 @@ export async function POST(request) {
 
   // 1) Supabase
   const supaUrl = process.env.SUPABASE_URL;
-  const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supaKey = process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (supaUrl && supaKey) {
     // Normalisoi: poista mahdollinen /rest/v1(/) ja loppukauttaviivat,
     // jotta sekä perus-URL että REST-endpoint kelpaavat.
     const base = supaUrl.replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
     try {
-      const res = await fetch(`${base}/rest/v1/leads`, {
+      const res = await fetch(`${base}/rest/v1/paasykoe_leads`, {
         method: "POST",
         headers: {
           apikey: supaKey,
