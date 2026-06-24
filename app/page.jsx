@@ -96,6 +96,16 @@ function Hero() {
           valintakokeista, koesisällöistä ja niihin valmistautumisesta. Valintakokeilla valitaan noin puolet
           uusista opiskelijoista kanditason opintoihin.
         </p>
+        <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <a
+            href="#tasotesti"
+            className="inline-flex items-center gap-2 rounded-pill bg-navy px-6 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
+          >
+            Tee ilmainen tasotesti
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </a>
+          <span className="text-sm font-semibold text-navy/60">2 min · maksuton · saat henkilökohtaisen suosituksen</span>
+        </div>
       </div>
     </section>
   );
