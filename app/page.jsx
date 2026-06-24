@@ -2,6 +2,7 @@
 // Semanttinen HTML (h1/h2/h3/p), virallinen ilme, JSON-LD (FAQPage) SEO:ta varten.
 
 import { COURSES } from "./courses";
+import Quiz from "./tasotesti/Quiz";
 
 /* ---------------- ikonit / merkit ---------------- */
 function Logo({ className = "h-11 w-11" }) {
@@ -133,6 +134,29 @@ function ExamGrid() {
               </p>
             </article>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------- tasotesti (upotettu etusivulle) ---------------- */
+function TasotestiSection() {
+  return (
+    <section id="tasotesti" className="scroll-mt-24 bg-navy py-14 md:py-20" aria-labelledby="tasotesti-otsikko">
+      <div className="mx-auto max-w-3xl px-6 md:px-8">
+        <span className="inline-flex items-center gap-2 rounded-pill bg-gold px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-navy">
+          Maksuton · 2 minuuttia
+        </span>
+        <h2 id="tasotesti-otsikko" className="mt-5 font-heading text-3xl font-extrabold tracking-tight text-white md:text-4xl">
+          Mikä koe on juuri sinua varten?
+        </h2>
+        <p className="mt-4 text-lg leading-relaxed text-white/80">
+          Et tiedä mille alalle hakisit? Vastaa muutamaan kysymykseen, niin kerromme sinulle parhaiten
+          sopivan alan, koulutuksen ja valmennuskurssin — ilmaiseksi ja ilman sitoutumista.
+        </p>
+        <div className="mt-8">
+          <Quiz />
         </div>
       </div>
     </section>
@@ -300,7 +324,7 @@ function Courses() {
           </p>
         </div>
         <a
-          href="/tasotesti"
+          href="#tasotesti"
           className="inline-flex shrink-0 items-center gap-2 rounded-pill bg-gold px-5 py-3 font-heading text-sm font-bold text-navy transition-colors hover:bg-gold-dark"
         >
           Tee ilmainen tasotesti
@@ -380,6 +404,7 @@ export default function Page() {
         <TopNav />
         <Hero />
         <ExamGrid />
+        <TasotestiSection />
         <Preparation />
         <Faq />
         <Footer />
