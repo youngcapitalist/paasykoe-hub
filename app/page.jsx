@@ -26,15 +26,15 @@ const NAV = ["Etusivu", "Koulutukset & hakeminen", "Todistusvalinta", "Valintako
 
 /* ---------------- data ---------------- */
 const EXAMS = [
-  { code: "A", field: "Kasvatusala ja psykologia", href: "https://valintakoea.fi", sisalto: "Soveltuvuuskoe ja aineistokoe.", alat: "Luokanopettaja, varhaiskasvatus, erityisopettaja, opinto-ohjaaja sekä psykologia ja logopedia." },
-  { code: "B", field: "Lääketieteelliset alat", href: "https://valintakoeb.fi", sisalto: "Biologian, fysiikan ja kemian lukion oppimääriin perustuva koe.", alat: "Lääketiede, hammaslääketiede ja eläinlääketiede." },
-  { code: "C", field: "Tekniikka ja luonnontieteet", href: "https://valintakoec.fi", sisalto: "Matematiikan, fysiikan ja kemian ongelmanratkaisutaidot. Kokeessa on yhteinen osio ja eriytyviä osioita.", alat: "Insinööritieteet, tietojenkäsittely, fysiikka, kemia." },
-  { code: "D", field: "Kauppatieteet", sisalto: "Taloustiedon, matematiikan ja historian soveltaminen. Perustuu lukion oppimäärään ja ennakkomateriaaliin.", alat: "Kauppatieteet ja taloustiede." },
-  { code: "E", field: "Oikeustiede", href: "https://valintakoee.fi", sisalto: "Juridisen tiedon omaksuminen ja soveltaminen. Perustuu ennakkoon julkaistavaan aineistoon.", alat: "Oikeustiede (Helsinki, Turku, Joensuu, Rovaniemi)." },
-  { code: "F", field: "Yhteiskuntatieteet", href: "https://valintakoefpro.com", sisalto: "Yhteiskuntaopin ja historian oppimääriin sekä aineistoon perustuva koe.", alat: "Valtio-oppi, sosiologia, viestintä." },
-  { code: "G", field: "Kielet ja viestintä", sisalto: "Kielellinen päättely ja aineiston ymmärtäminen.", alat: "Vieraat kielet, käännöstiede." },
-  { code: "H", field: "Humanistiset tieteet", sisalto: "Aineistokoe, joka mittaa kulttuurista ja historiallista ymmärrystä.", alat: "Historia, kulttuurintutkimus, taiteiden tutkimus." },
-  { code: "I", field: "Liikunta- ja terveystieteet", sisalto: "Terveystiedon oppimäärä ja fyysiset soveltuvuuskokeet (alakohtainen).", alat: "Liikuntapedagogiikka, fysioterapia." },
+  { code: "A", field: "Tekniikka ja luonnontieteet", href: "https://valintakoea.fi", alat: "Fysiikka, kemia, matemaattiset tieteet, nanotiede, tietojenkäsittelytieteet ja tekniikka." },
+  { code: "B", field: "Lääke- ja terveystieteet", href: "https://valintakoeb.fi", alat: "Biokemia ja molekyylibiotieteet, biolääketiede, eläinlääketiede, farmasia, hammaslääketiede ja ravitsemustiede." },
+  { code: "C", field: "Biologia ja ympäristötieteet", href: "https://valintakoec.fi", alat: "Biologia ja ympäristötieteet, elintarviketieteet, geotieteet, maantiede, maatalous- ja metsätieteet." },
+  { code: "D", field: "Psykologia ja hyvinvointi", alat: "Logopedia, psykologia, terveystieteet ja hoitotiede sekä valmennustieteet ja liikuntabiologia." },
+  { code: "E", field: "Kasvatusala", href: "https://valintakoee.fi", alat: "Kasvatustieteet ja liikuntapedagogiikka." },
+  { code: "F", field: "Kauppatieteet", href: "https://valintakoefpro.com", alat: "Kauppatieteet, taloustiede, tietojärjestelmätiede sekä ympäristö- ja elintarviketalous." },
+  { code: "G", field: "Oikeus- ja yhteiskuntatieteet", alat: "Hallintotiede, oikeustiede, sosiaalitieteet, viestintätieteet ja yhteiskuntatieteet sekä liikunnan yhteiskuntatieteet." },
+  { code: "H", field: "Humanistiset tieteet", alat: "Filosofia, historia, kulttuurien tutkimus, taiteiden tutkimus ja teologia." },
+  { code: "I", field: "Kielet", alat: "Kielet, kielitieteet ja kirjallisuustieteet." },
 ];
 
 // Kurssilinkit ja -tiedot. Hinnat, paikat ja sulkeutumispäivät ovat vielä
@@ -46,8 +46,10 @@ const COURSES = [
     title: "Lääkiksen valmennuskurssi 2027",
     href: "https://valintakoeb.fi",
     rating: 4.6,
-    price: "490 €",
-    oldPrice: "790 €",
+    price: "149 €",
+    oldPrice: "299 €",
+    vipPrice: "499 €",
+    vipOldPrice: "699 €",
     seatsLeft: 7,
     closing: "Ilmoittautuminen sulkeutuu 31.1.",
     popular: true,
@@ -59,17 +61,19 @@ const COURSES = [
   },
   {
     code: "E",
-    field: "Oikeustiede",
-    title: "Oikiksen valmennuskurssi 2027",
+    field: "Kasvatusala & liikuntapedagogiikka",
+    title: "Kasvatusalan valmennuskurssi 2027",
     href: "https://valintakoee.fi",
     rating: 4.6,
-    price: "390 €",
-    oldPrice: "590 €",
+    price: "99 €",
+    oldPrice: "199 €",
+    vipPrice: "149 €",
+    vipOldPrice: "249 €",
     seatsLeft: 12,
     closing: "Vain kevään ryhmä jäljellä",
     popular: false,
     perks: [
-      "Aineiston soveltaminen ja vastaustekniikka haltuun",
+      "Soveltuvuus- ja aineistokoe harjoiteltuna rinnakkain",
       "Viikoittaiset live-klinikat ja tallenteet",
       "Aiempien vuosien mallivastaukset analysoituna",
     ],
@@ -80,49 +84,55 @@ const COURSES = [
     title: "Kauppiksen valmennuskurssi 2027",
     href: "https://valintakoefpro.com",
     rating: 4.6,
-    price: "350 €",
-    oldPrice: "520 €",
+    price: "99 €",
+    oldPrice: "199 €",
+    vipPrice: "149 €",
+    vipOldPrice: "249 €",
     seatsLeft: 9,
     closing: "Early bird -hinta päättyy pian",
     popular: false,
     perks: [
       "Matematiikka, taloustieto ja historia yhdessä paketissa",
       "Ennakkomateriaalin tiivistykset ja muistilistat",
-      "Henkilökohtainen opintopolku ja edistymisen seuranta",
+      "Mentorina alalle juuri tällä kurssilla päässyt opiskelija",
     ],
   },
   {
     code: "A",
-    field: "Kasvatusala & opettajankoulutus",
-    title: "Kasvatusalan valmennuskurssi 2027",
+    field: "Tekniikka & luonnontieteet (DI)",
+    title: "Tekniikan ja DI-valintakokeen valmennuskurssi 2027",
     href: "https://valintakoea.fi",
     rating: 4.6,
-    price: "350 €",
-    oldPrice: "490 €",
+    price: "99 €",
+    oldPrice: "199 €",
+    vipPrice: "149 €",
+    vipOldPrice: "249 €",
     seatsLeft: 15,
     closing: "Ryhmäkoko rajattu henkilökohtaisen ohjauksen vuoksi",
     popular: false,
     perks: [
-      "Soveltuvuus- ja aineistokoe harjoiteltuna rinnakkain",
-      "Haastattelu- ja ryhmätilanteiden valmennus",
-      "Mentorina alalle päässyt opettajaopiskelija",
+      "Matematiikan, fysiikan ja kemian ongelmanratkaisu",
+      "Yhteinen osio ja eriytyvät osiot harjoiteltuna",
+      "Viikoittaiset live-klinikat ja tallenteet",
     ],
   },
   {
     code: "C",
-    field: "Psykologia",
-    title: "Psykologian valmennuskurssi 2027",
+    field: "Biologia & ympäristötieteet",
+    title: "Biologian ja luonnontieteiden valmennuskurssi 2027",
     href: "https://valintakoec.fi",
     rating: 4.6,
-    price: "350 €",
-    oldPrice: "490 €",
+    price: "99 €",
+    oldPrice: "199 €",
+    vipPrice: "149 €",
+    vipOldPrice: "249 €",
     seatsLeft: 11,
     closing: "Kevään ryhmän paikat täyttyvät",
     popular: false,
     perks: [
-      "Aineistokokeen lukutekniikka ja aikataulutus",
-      "Harjoituskokeet aidoissa koeolosuhteissa",
-      "Mentorina alalle päässyt psykologian opiskelija",
+      "Biologian ja ympäristötieteiden ydinsisällöt haltuun",
+      "Aineistotehtävien analysointi ja vastaustekniikka",
+      "Viikoittaiset live-klinikat ja tallenteet",
     ],
   },
 ];
@@ -213,9 +223,6 @@ function ExamGrid() {
                 </h3>
               </div>
               <p className="text-[15px] leading-relaxed text-navy/80">
-                <strong className="font-semibold text-navy">Sisältö:</strong> {e.sisalto}
-              </p>
-              <p className="mt-3 text-[15px] leading-relaxed text-navy/80">
                 <strong className="font-semibold text-navy">Koulutusalat:</strong> {e.alat}
               </p>
             </article>
@@ -346,15 +353,27 @@ function Courses() {
               <span className="text-xs font-semibold text-navy/60">{c.closing}</span>
             </div>
 
-            {/* Hinta + ankkuri (vertailuhinta) */}
-            <div className="mt-5 flex items-end justify-between gap-4 border-t border-line pt-5">
-              <div>
-                <span className="font-heading text-2xl font-extrabold text-navy">{c.price}</span>
-                <span className="ml-2 text-sm font-semibold text-navy/40 line-through">{c.oldPrice}</span>
+            {/* Hinnat + ankkuri (vertailuhinta) + VIP-upsell */}
+            <div className="mt-5 border-t border-line pt-5">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl bg-mist px-4 py-3">
+                  <span className="text-xs font-bold uppercase tracking-wide text-navy/50">Peruskurssi</span>
+                  <div className="mt-0.5 flex items-baseline gap-2">
+                    <span className="font-heading text-2xl font-extrabold text-navy">{c.price}</span>
+                    <span className="text-sm font-semibold text-navy/40 line-through">{c.oldPrice}</span>
+                  </div>
+                </div>
+                <div className="rounded-xl bg-navy px-4 py-3">
+                  <span className="text-xs font-bold uppercase tracking-wide text-gold">VIP</span>
+                  <div className="mt-0.5 flex items-baseline gap-2">
+                    <span className="font-heading text-2xl font-extrabold text-white">{c.vipPrice}</span>
+                    <span className="text-sm font-semibold text-white/40 line-through">{c.vipOldPrice}</span>
+                  </div>
+                </div>
               </div>
               <a
                 href={c.href}
-                className="inline-flex items-center gap-2 rounded-pill bg-navy px-5 py-3 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
               >
                 Varaa paikkasi
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
