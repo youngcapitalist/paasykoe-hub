@@ -37,6 +37,91 @@ const EXAMS = [
   { code: "I", field: "Liikunta- ja terveystieteet", sisalto: "Terveystiedon oppimäärä ja fyysiset soveltuvuuskokeet (alakohtainen).", alat: "Liikuntapedagogiikka, fysioterapia." },
 ];
 
+// ⇩⇩⇩ VAIHDA NÄMÄ OMIIN KURSSILINKKEIHISI ⇩⇩⇩
+// Korvaa "#" omilla URL-osoitteillasi (esim. https://kurssisi.fi/laaketiede).
+const COURSES = [
+  {
+    code: "B",
+    field: "Lääketiede & hammaslääketiede",
+    title: "Lääkiksen valmennuskurssi 2026",
+    href: "#", // TODO: oma linkki
+    rating: 4.9,
+    reviews: 1284,
+    students: "6 200+",
+    success: "Sisäänpäässeistä 8/10 valmistautui kurssillamme",
+    price: "490 €",
+    oldPrice: "790 €",
+    seatsLeft: 7,
+    closing: "Ilmoittautuminen sulkeutuu 31.1.",
+    popular: true,
+    perks: [
+      "Yli 1 200 koetehtävää ja 12 simuloitua koetta",
+      "Henkilökohtainen palaute alan opettajilta",
+      "Sisäänpääsytakuu — tai seuraava kurssi veloituksetta",
+    ],
+  },
+  {
+    code: "E",
+    field: "Oikeustiede",
+    title: "Oikiksen valmennuskurssi 2026",
+    href: "#", // TODO: oma linkki
+    rating: 4.8,
+    reviews: 742,
+    students: "3 400+",
+    success: "94 % suosittelee kurssia ystävälleen",
+    price: "390 €",
+    oldPrice: "590 €",
+    seatsLeft: 12,
+    closing: "Vain kevään ryhmä jäljellä",
+    popular: false,
+    perks: [
+      "Aineiston soveltaminen ja vastaustekniikka haltuun",
+      "Viikoittaiset live-klinikat ja tallenteet",
+      "Aiempien vuosien mallivastaukset analysoituna",
+    ],
+  },
+  {
+    code: "D",
+    field: "Kauppatieteet",
+    title: "Kauppiksen valmennuskurssi 2026",
+    href: "#", // TODO: oma linkki
+    rating: 4.9,
+    reviews: 968,
+    students: "5 100+",
+    success: "Korkein keskimääräinen pistemäärä alalla",
+    price: "350 €",
+    oldPrice: "520 €",
+    seatsLeft: 9,
+    closing: "Early bird -hinta päättyy pian",
+    popular: false,
+    perks: [
+      "Matematiikka, taloustieto ja historia yhdessä paketissa",
+      "Ennakkomateriaalin tiivistykset ja muistilistat",
+      "Sisäänpääsytakuu kirjallisella ehdolla",
+    ],
+  },
+  {
+    code: "A",
+    field: "Psykologia & kasvatusala",
+    title: "Psykologian valmennuskurssi 2026",
+    href: "#", // TODO: oma linkki
+    rating: 4.8,
+    reviews: 531,
+    students: "2 800+",
+    success: "Soveltuvuus- ja aineistokoe rinnakkain harjoiteltuna",
+    price: "350 €",
+    oldPrice: "490 €",
+    seatsLeft: 15,
+    closing: "Ryhmäkoko rajattu henkilökohtaisen ohjauksen vuoksi",
+    popular: false,
+    perks: [
+      "Aineistokokeen lukutekniikka ja aikataulutus",
+      "Harjoituskokeet aidoissa koeolosuhteissa",
+      "Mentorina alalle päässyt opiskelija",
+    ],
+  },
+];
+
 const FAQ = [
   { q: "Voinko osallistua useampaan valintakokeeseen?", a: "Kyllä. Voit hakea usealle eri koulutusalalle ja osallistua niitä vastaaviin kokeisiin. Huomioi kuitenkin koepäivien mahdolliset päällekkäisyydet kevään aikatauluissa." },
   { q: "Ovatko kokeet digitaalisia?", a: "Kyllä, kaikki yhdeksän kansallista valintakoetta tehdään digitaalisesti omalla kannettavalla tietokoneella valvotussa koetilanteessa." },
@@ -145,16 +230,150 @@ function Preparation() {
           ratkaisevassa asemassa sisäänpääsyssä.
         </p>
 
-        {/* Tila myöhemmälle komponentille: "Katso asiantuntijoiden suosittelemat valmennusmateriaalit ja VIP-paketit" */}
-        <div
-          id="valmennusmateriaalit"
-          data-slot="valmennusmateriaalit"
-          className="mt-10 rounded-2xl border-2 border-dashed border-line bg-white/60 px-6 py-10 text-center text-sm text-navy/40"
-        >
-          Tähän lisätään myöhemmin: suositellut valmennusmateriaalit ja VIP-paketit.
-        </div>
+        <Courses />
       </div>
     </section>
+  );
+}
+
+/* ---------------- tähtiarvostelu ---------------- */
+function Stars({ rating }) {
+  return (
+    <span className="inline-flex items-center gap-0.5 text-gold" aria-label={`Arvosana ${rating} / 5`}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <svg key={i} viewBox="0 0 20 20" className={`h-4 w-4 ${i < Math.round(rating) ? "fill-gold" : "fill-line"}`} aria-hidden>
+          <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 15.9 4.8 17.6l1-5.8L1.5 7.7l5.9-.9z" />
+        </svg>
+      ))}
+    </span>
+  );
+}
+
+/* ---------------- valmennuskurssit (Cialdini-vaikuttaminen) ---------------- */
+// Vaikuttamisen periaatteet kohdennettuna (Cialdini):
+//  • Auktoriteetti  – alan opettajat, asiantuntijasisältö
+//  • Sosiaalinen todiste – opiskelijamäärät, arvostelut, suositteluprosentti
+//  • Niukkuus – rajatut paikat ja sulkeutuva ilmoittautuminen
+//  • Sitoutuminen – ilmainen tasotesti madaltaa kynnystä ensiaskeleeseen
+//  • Vastavuoroisuus – ilmainen materiaali lahjana
+//  • Riskinpoisto – sisäänpääsytakuu
+function Courses() {
+  return (
+    <div id="valmennusmateriaalit" data-slot="valmennusmateriaalit" className="mt-14">
+      <div className="max-w-3xl">
+        <span className="inline-flex items-center gap-2 rounded-pill bg-navy px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-gold">
+          Asiantuntijoiden suosittelemat
+        </span>
+        <h3 className="mt-4 font-heading text-2xl font-extrabold tracking-tight text-navy md:text-3xl">
+          Valmennuskurssit, joilla pääset sisään — etkä jää varasijalle
+        </h3>
+        <p className="mt-4 text-lg leading-relaxed text-navy/85">
+          Joka vuosi tuhannet hakijat kilpailevat samoista paikoista. Ratkaiseva ero ei ole lahjakkuus vaan
+          oikea valmistautuminen. Alla olevat kurssit ovat alalle päässeiden opiskelijoiden ja opettajien
+          rakentamia — juuri sen kokeen voittamiseen, jota sinä tavoittelet.
+        </p>
+      </div>
+
+      {/* Luottamuspalkki: auktoriteetti + sosiaalinen todiste */}
+      <dl className="mt-8 grid gap-4 rounded-2xl border border-line bg-white p-6 sm:grid-cols-3">
+        {[
+          ["17 500+", "valmentautunutta hakijaa"],
+          ["94 %", "suosittelisi kurssia ystävälleen"],
+          ["Alan opettajat", "ja sisään päässeet mentorit"],
+        ].map(([big, small]) => (
+          <div key={small} className="text-center">
+            <dt className="font-heading text-2xl font-extrabold text-navy">{big}</dt>
+            <dd className="mt-1 text-sm text-navy/70">{small}</dd>
+          </div>
+        ))}
+      </dl>
+
+      {/* Kurssikortit */}
+      <div className="mt-8 grid gap-6 md:grid-cols-2">
+        {COURSES.map((c) => (
+          <article
+            key={c.code}
+            className={`relative flex flex-col rounded-2xl border bg-white p-6 transition-shadow hover:shadow-[0_12px_40px_-16px_rgba(10,37,64,0.28)] ${
+              c.popular ? "border-gold ring-2 ring-gold/40" : "border-line"
+            }`}
+          >
+            {c.popular && (
+              <span className="absolute -top-3 left-6 rounded-pill bg-gold px-3 py-1 font-heading text-xs font-extrabold uppercase tracking-wider text-navy">
+                Suosituin valinta
+              </span>
+            )}
+
+            <div className="flex items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{c.code}</span>
+              <div>
+                <h4 className="font-heading text-lg font-bold leading-tight text-navy">{c.title}</h4>
+                <span className="text-sm font-semibold text-navy/60">{c.field}</span>
+              </div>
+            </div>
+
+            {/* Sosiaalinen todiste */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-navy/70">
+              <Stars rating={c.rating} />
+              <span className="font-semibold text-navy">{c.rating}/5</span>
+              <span>({c.reviews} arvostelua)</span>
+              <span aria-hidden>·</span>
+              <span>{c.students} opiskelijaa</span>
+            </div>
+            <p className="mt-2 text-sm font-semibold text-navy/80">{c.success}</p>
+
+            {/* Hyödyt: auktoriteetti + riskinpoisto */}
+            <ul className="mt-4 space-y-2 text-[15px] text-navy/80">
+              {c.perks.map((p) => (
+                <li key={p} className="flex gap-2.5">
+                  <svg viewBox="0 0 20 20" className="mt-0.5 h-5 w-5 shrink-0 fill-gold" aria-hidden><path d="M8 13.2l-3.1-3.1-1.4 1.4L8 16 17 7l-1.4-1.4z" /></svg>
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+
+            {/* Niukkuus */}
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-pill bg-gold/15 px-3 py-1 text-xs font-bold text-navy ring-1 ring-gold/40">
+                <span className="h-2 w-2 rounded-full bg-gold" /> Vain {c.seatsLeft} paikkaa jäljellä
+              </span>
+              <span className="text-xs font-semibold text-navy/60">{c.closing}</span>
+            </div>
+
+            {/* Hinta + ankkuri (vertailuhinta) */}
+            <div className="mt-5 flex items-end justify-between gap-4 border-t border-line pt-5">
+              <div>
+                <span className="font-heading text-2xl font-extrabold text-navy">{c.price}</span>
+                <span className="ml-2 text-sm font-semibold text-navy/40 line-through">{c.oldPrice}</span>
+              </div>
+              <a
+                href={c.href}
+                className="inline-flex items-center gap-2 rounded-pill bg-navy px-5 py-3 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
+              >
+                Varaa paikkasi
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {/* Vastavuoroisuus + sitoutuminen: ilmainen ensiaskel */}
+      <div className="mt-8 flex flex-col items-start justify-between gap-5 rounded-2xl bg-navy px-6 py-7 text-white md:flex-row md:items-center">
+        <div>
+          <h4 className="font-heading text-lg font-bold text-gold">Et ole vielä varma alasta?</h4>
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-white/80">
+            Lataa veloituksetta tasotesti ja katso jo tänään, kuinka lähellä sisäänpääsyä olet. Ilman
+            sitoutumista — mutta useimmat aloittavat juuri tästä.
+          </p>
+        </div>
+        <a
+          href="#"
+          className="inline-flex shrink-0 items-center gap-2 rounded-pill bg-gold px-5 py-3 font-heading text-sm font-bold text-navy transition-colors hover:bg-gold-dark"
+        >
+          Lataa ilmainen tasotesti
+        </a>
+      </div>
+    </div>
   );
 }
 
