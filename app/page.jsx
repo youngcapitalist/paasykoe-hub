@@ -1,6 +1,8 @@
 // Pääsykoe.fi — riippumaton tietopankki yliopistojen kansallisista valintakokeista.
 // Semanttinen HTML (h1/h2/h3/p), virallinen ilme, JSON-LD (FAQPage) SEO:ta varten.
 
+import { COURSES } from "./courses";
+
 /* ---------------- ikonit / merkit ---------------- */
 function Logo({ className = "h-11 w-11" }) {
   return (
@@ -26,100 +28,15 @@ const NAV = ["Etusivu", "Koulutukset & hakeminen", "Todistusvalinta", "Valintako
 
 /* ---------------- data ---------------- */
 const EXAMS = [
-  { code: "A", field: "Kasvatusala ja psykologia", sisalto: "Soveltuvuuskoe ja aineistokoe.", alat: "Luokanopettaja, varhaiskasvatus, erityisopettaja, opinto-ohjaaja sekä psykologia ja logopedia." },
-  { code: "B", field: "Lääketieteelliset alat", sisalto: "Biologian, fysiikan ja kemian lukion oppimääriin perustuva koe.", alat: "Lääketiede, hammaslääketiede ja eläinlääketiede." },
-  { code: "C", field: "Tekniikka ja luonnontieteet", sisalto: "Matematiikan, fysiikan ja kemian ongelmanratkaisutaidot. Kokeessa on yhteinen osio ja eriytyviä osioita.", alat: "Insinööritieteet, tietojenkäsittely, fysiikka, kemia." },
-  { code: "D", field: "Kauppatieteet", sisalto: "Taloustiedon, matematiikan ja historian soveltaminen. Perustuu lukion oppimäärään ja ennakkomateriaaliin.", alat: "Kauppatieteet ja taloustiede." },
-  { code: "E", field: "Oikeustiede", sisalto: "Juridisen tiedon omaksuminen ja soveltaminen. Perustuu ennakkoon julkaistavaan aineistoon.", alat: "Oikeustiede (Helsinki, Turku, Joensuu, Rovaniemi)." },
-  { code: "F", field: "Yhteiskuntatieteet", sisalto: "Yhteiskuntaopin ja historian oppimääriin sekä aineistoon perustuva koe.", alat: "Valtio-oppi, sosiologia, viestintä." },
-  { code: "G", field: "Kielet ja viestintä", sisalto: "Kielellinen päättely ja aineiston ymmärtäminen.", alat: "Vieraat kielet, käännöstiede." },
-  { code: "H", field: "Humanistiset tieteet", sisalto: "Aineistokoe, joka mittaa kulttuurista ja historiallista ymmärrystä.", alat: "Historia, kulttuurintutkimus, taiteiden tutkimus." },
-  { code: "I", field: "Liikunta- ja terveystieteet", sisalto: "Terveystiedon oppimäärä ja fyysiset soveltuvuuskokeet (alakohtainen).", alat: "Liikuntapedagogiikka, fysioterapia." },
-];
-
-// ⇩⇩⇩ VAIHDA NÄMÄ OMIIN KURSSILINKKEIHISI ⇩⇩⇩
-// Korvaa "#" omilla URL-osoitteillasi (esim. https://kurssisi.fi/laaketiede).
-const COURSES = [
-  {
-    code: "B",
-    field: "Lääketiede & hammaslääketiede",
-    title: "Lääkiksen valmennuskurssi 2026",
-    href: "#", // TODO: oma linkki
-    rating: 4.9,
-    reviews: 1284,
-    students: "6 200+",
-    success: "Sisäänpäässeistä 8/10 valmistautui kurssillamme",
-    price: "490 €",
-    oldPrice: "790 €",
-    seatsLeft: 7,
-    closing: "Ilmoittautuminen sulkeutuu 31.1.",
-    popular: true,
-    perks: [
-      "Yli 1 200 koetehtävää ja 12 simuloitua koetta",
-      "Henkilökohtainen palaute alan opettajilta",
-      "Sisäänpääsytakuu — tai seuraava kurssi veloituksetta",
-    ],
-  },
-  {
-    code: "E",
-    field: "Oikeustiede",
-    title: "Oikiksen valmennuskurssi 2026",
-    href: "#", // TODO: oma linkki
-    rating: 4.8,
-    reviews: 742,
-    students: "3 400+",
-    success: "94 % suosittelee kurssia ystävälleen",
-    price: "390 €",
-    oldPrice: "590 €",
-    seatsLeft: 12,
-    closing: "Vain kevään ryhmä jäljellä",
-    popular: false,
-    perks: [
-      "Aineiston soveltaminen ja vastaustekniikka haltuun",
-      "Viikoittaiset live-klinikat ja tallenteet",
-      "Aiempien vuosien mallivastaukset analysoituna",
-    ],
-  },
-  {
-    code: "D",
-    field: "Kauppatieteet",
-    title: "Kauppiksen valmennuskurssi 2026",
-    href: "#", // TODO: oma linkki
-    rating: 4.9,
-    reviews: 968,
-    students: "5 100+",
-    success: "Korkein keskimääräinen pistemäärä alalla",
-    price: "350 €",
-    oldPrice: "520 €",
-    seatsLeft: 9,
-    closing: "Early bird -hinta päättyy pian",
-    popular: false,
-    perks: [
-      "Matematiikka, taloustieto ja historia yhdessä paketissa",
-      "Ennakkomateriaalin tiivistykset ja muistilistat",
-      "Sisäänpääsytakuu kirjallisella ehdolla",
-    ],
-  },
-  {
-    code: "A",
-    field: "Psykologia & kasvatusala",
-    title: "Psykologian valmennuskurssi 2026",
-    href: "#", // TODO: oma linkki
-    rating: 4.8,
-    reviews: 531,
-    students: "2 800+",
-    success: "Soveltuvuus- ja aineistokoe rinnakkain harjoiteltuna",
-    price: "350 €",
-    oldPrice: "490 €",
-    seatsLeft: 15,
-    closing: "Ryhmäkoko rajattu henkilökohtaisen ohjauksen vuoksi",
-    popular: false,
-    perks: [
-      "Aineistokokeen lukutekniikka ja aikataulutus",
-      "Harjoituskokeet aidoissa koeolosuhteissa",
-      "Mentorina alalle päässyt opiskelija",
-    ],
-  },
+  { code: "A", field: "Tekniikka ja luonnontieteet", href: "https://valintakoea.fi", alat: "Fysiikka, kemia, matemaattiset tieteet, nanotiede, tietojenkäsittelytieteet ja tekniikka." },
+  { code: "B", field: "Lääke- ja terveystieteet", href: "https://valintakoeb.fi", alat: "Biokemia ja molekyylibiotieteet, biolääketiede, eläinlääketiede, farmasia, hammaslääketiede ja ravitsemustiede." },
+  { code: "C", field: "Biologia ja ympäristötieteet", href: "https://valintakoec.fi", alat: "Biologia ja ympäristötieteet, elintarviketieteet, geotieteet, maantiede, maatalous- ja metsätieteet." },
+  { code: "D", field: "Psykologia ja hyvinvointi", alat: "Logopedia, psykologia, terveystieteet ja hoitotiede sekä valmennustieteet ja liikuntabiologia." },
+  { code: "E", field: "Kasvatusala", href: "https://valintakoee.fi", alat: "Kasvatustieteet ja liikuntapedagogiikka." },
+  { code: "F", field: "Kauppatieteet", href: "https://valintakoefpro.com", alat: "Kauppatieteet, taloustiede, tietojärjestelmätiede sekä ympäristö- ja elintarviketalous." },
+  { code: "G", field: "Oikeus- ja yhteiskuntatieteet", alat: "Hallintotiede, oikeustiede, sosiaalitieteet, viestintätieteet ja yhteiskuntatieteet sekä liikunnan yhteiskuntatieteet." },
+  { code: "H", field: "Humanistiset tieteet", alat: "Filosofia, historia, kulttuurien tutkimus, taiteiden tutkimus ja teologia." },
+  { code: "I", field: "Kielet", alat: "Kielet, kielitieteet ja kirjallisuustieteet." },
 ];
 
 const FAQ = [
@@ -197,15 +114,22 @@ function ExamGrid() {
               <div className="mb-4 flex items-center gap-3">
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-navy font-heading text-xl font-extrabold text-gold">{e.code}</span>
                 <h3 className="font-heading text-lg font-bold leading-snug text-navy">
-                  Valintakoe {e.code}
+                  {e.href ? (
+                    <a href={e.href} className="text-navy underline decoration-gold decoration-2 underline-offset-4 hover:text-navy-light">
+                      Valintakoe {e.code}
+                    </a>
+                  ) : (
+                    <>Valintakoe {e.code}</>
+                  )}
                   <span className="block text-sm font-semibold text-navy/60">{e.field}</span>
                 </h3>
               </div>
               <p className="text-[15px] leading-relaxed text-navy/80">
-                <strong className="font-semibold text-navy">Sisältö:</strong> {e.sisalto}
-              </p>
-              <p className="mt-3 text-[15px] leading-relaxed text-navy/80">
                 <strong className="font-semibold text-navy">Koulutusalat:</strong> {e.alat}
+              </p>
+              <p className="mt-4 inline-flex items-center gap-2 rounded-pill bg-mist px-3 py-1.5 text-xs font-semibold text-navy/70">
+                <span className="h-2 w-2 rounded-full bg-gold" />
+                Koeaika: kevät 2027 — päivämäärää ei ole vielä julkaistu
               </p>
             </article>
           ))}
@@ -256,7 +180,7 @@ function Stars({ rating }) {
 //  • Niukkuus – rajatut paikat ja sulkeutuva ilmoittautuminen
 //  • Sitoutuminen – ilmainen tasotesti madaltaa kynnystä ensiaskeleeseen
 //  • Vastavuoroisuus – ilmainen materiaali lahjana
-//  • Riskinpoisto – sisäänpääsytakuu
+//  • Ankkurointi – vertailuhinta tekee tarjouksesta edullisen
 function Courses() {
   return (
     <div id="valmennusmateriaalit" data-slot="valmennusmateriaalit" className="mt-14">
@@ -277,8 +201,8 @@ function Courses() {
       {/* Luottamuspalkki: auktoriteetti + sosiaalinen todiste */}
       <dl className="mt-8 grid gap-4 rounded-2xl border border-line bg-white p-6 sm:grid-cols-3">
         {[
-          ["17 500+", "valmentautunutta hakijaa"],
-          ["94 %", "suosittelisi kurssia ystävälleen"],
+          ["2 000+", "valmentautunutta hakijaa"],
+          ["4.6 / 5", "kurssien keskiarvosana"],
           ["Alan opettajat", "ja sisään päässeet mentorit"],
         ].map(([big, small]) => (
           <div key={small} className="text-center">
@@ -315,13 +239,9 @@ function Courses() {
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-navy/70">
               <Stars rating={c.rating} />
               <span className="font-semibold text-navy">{c.rating}/5</span>
-              <span>({c.reviews} arvostelua)</span>
-              <span aria-hidden>·</span>
-              <span>{c.students} opiskelijaa</span>
             </div>
-            <p className="mt-2 text-sm font-semibold text-navy/80">{c.success}</p>
 
-            {/* Hyödyt: auktoriteetti + riskinpoisto */}
+            {/* Hyödyt: auktoriteetti */}
             <ul className="mt-4 space-y-2 text-[15px] text-navy/80">
               {c.perks.map((p) => (
                 <li key={p} className="flex gap-2.5">
@@ -339,15 +259,27 @@ function Courses() {
               <span className="text-xs font-semibold text-navy/60">{c.closing}</span>
             </div>
 
-            {/* Hinta + ankkuri (vertailuhinta) */}
-            <div className="mt-5 flex items-end justify-between gap-4 border-t border-line pt-5">
-              <div>
-                <span className="font-heading text-2xl font-extrabold text-navy">{c.price}</span>
-                <span className="ml-2 text-sm font-semibold text-navy/40 line-through">{c.oldPrice}</span>
+            {/* Hinnat + ankkuri (vertailuhinta) + VIP-upsell */}
+            <div className="mt-5 border-t border-line pt-5">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl bg-mist px-4 py-3">
+                  <span className="text-xs font-bold uppercase tracking-wide text-navy/50">Peruskurssi</span>
+                  <div className="mt-0.5 flex items-baseline gap-2">
+                    <span className="font-heading text-2xl font-extrabold text-navy">{c.price}</span>
+                    <span className="text-sm font-semibold text-navy/40 line-through">{c.oldPrice}</span>
+                  </div>
+                </div>
+                <div className="rounded-xl bg-navy px-4 py-3">
+                  <span className="text-xs font-bold uppercase tracking-wide text-gold">VIP</span>
+                  <div className="mt-0.5 flex items-baseline gap-2">
+                    <span className="font-heading text-2xl font-extrabold text-white">{c.vipPrice}</span>
+                    <span className="text-sm font-semibold text-white/40 line-through">{c.vipOldPrice}</span>
+                  </div>
+                </div>
               </div>
               <a
                 href={c.href}
-                className="inline-flex items-center gap-2 rounded-pill bg-navy px-5 py-3 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
               >
                 Varaa paikkasi
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
@@ -362,15 +294,16 @@ function Courses() {
         <div>
           <h4 className="font-heading text-lg font-bold text-gold">Et ole vielä varma alasta?</h4>
           <p className="mt-1 max-w-xl text-sm leading-relaxed text-white/80">
-            Lataa veloituksetta tasotesti ja katso jo tänään, kuinka lähellä sisäänpääsyä olet. Ilman
-            sitoutumista — mutta useimmat aloittavat juuri tästä.
+            Tee maksuton tasotesti 2 minuutissa ja saat henkilökohtaisen suosituksen sinulle parhaiten
+            sopivasta alasta, koulutuksesta ja valmennuskurssista. Ilman sitoutumista — mutta useimmat
+            aloittavat juuri tästä.
           </p>
         </div>
         <a
-          href="#"
+          href="/tasotesti"
           className="inline-flex shrink-0 items-center gap-2 rounded-pill bg-gold px-5 py-3 font-heading text-sm font-bold text-navy transition-colors hover:bg-gold-dark"
         >
-          Lataa ilmainen tasotesti
+          Tee ilmainen tasotesti
         </a>
       </div>
     </div>

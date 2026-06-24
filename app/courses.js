@@ -1,0 +1,117 @@
+// Kurssilinkit ja -tiedot. Jaettu etusivun ja tasotestin kesken.
+// Hinnat, paikat ja sulkeutumispäivät ovat vielä vahvistamattomia esimerkkejä
+// — päivitä omilla luvuillasi.
+export const COURSES = [
+  {
+    code: "B",
+    field: "Lääketiede & hammaslääketiede",
+    koulutus: "Lääketiede, hammaslääketiede, eläinlääketiede, farmasia ja biolääketiede",
+    title: "Lääkiksen valmennuskurssi 2027",
+    href: "https://valintakoeb.fi",
+    rating: 4.6,
+    price: "149 €",
+    oldPrice: "299 €",
+    vipPrice: "499 €",
+    vipOldPrice: "699 €",
+    seatsLeft: 7,
+    closing: "Ilmoittautuminen sulkeutuu 31.1.",
+    popular: true,
+    recommend:
+      "Sinua vetää puoleensa ihmisten auttaminen ja luonnontieteet. Lääketieteen valintakoe (B) on Suomen kilpailluin — siksi järjestelmällinen valmistautuminen ratkaisee.",
+    perks: [
+      "Yli 1 200 koetehtävää ja 12 simuloitua koetta",
+      "Henkilökohtainen palaute alan opettajilta",
+      "Viikoittaiset live-klinikat ja tallenteet",
+    ],
+  },
+  {
+    code: "E",
+    field: "Kasvatusala & liikuntapedagogiikka",
+    koulutus: "Luokanopettaja, varhaiskasvatus, erityisopettaja ja liikuntapedagogiikka",
+    title: "Kasvatusalan valmennuskurssi 2027",
+    href: "https://valintakoee.fi",
+    rating: 4.6,
+    price: "99 €",
+    oldPrice: "199 €",
+    vipPrice: "149 €",
+    vipOldPrice: "249 €",
+    seatsLeft: 12,
+    closing: "Vain kevään ryhmä jäljellä",
+    popular: false,
+    recommend:
+      "Haluat tukea ja kasvattaa ihmisiä. Kasvatusalan valintakoe (E) yhdistää soveltuvuuden ja aineiston — oikealla tekniikalla erotut hakijajoukosta.",
+    perks: [
+      "Soveltuvuus- ja aineistokoe harjoiteltuna rinnakkain",
+      "Viikoittaiset live-klinikat ja tallenteet",
+      "Aiempien vuosien mallivastaukset analysoituna",
+    ],
+  },
+  {
+    code: "F",
+    field: "Kauppatieteet",
+    koulutus: "Kauppatieteet, taloustiede, tietojärjestelmätiede sekä ympäristö- ja elintarviketalous",
+    title: "Kauppiksen valmennuskurssi 2027",
+    href: "https://valintakoefpro.com",
+    rating: 4.6,
+    price: "99 €",
+    oldPrice: "199 €",
+    vipPrice: "149 €",
+    vipOldPrice: "249 €",
+    seatsLeft: 9,
+    closing: "Early bird -hinta päättyy pian",
+    popular: false,
+    recommend:
+      "Sinua kiinnostaa johtaminen, talous ja vaikuttaminen. Kauppatieteiden valintakoe (F) palkitsee ennakkomateriaalin hallinnan — ja siihen mentorimme on juuri päässyt sisään.",
+    perks: [
+      "Matematiikka, taloustieto ja historia yhdessä paketissa",
+      "Ennakkomateriaalin tiivistykset ja muistilistat",
+      "Mentorina alalle juuri tällä kurssilla päässyt opiskelija",
+    ],
+  },
+  {
+    code: "A",
+    field: "Tekniikka & luonnontieteet (DI)",
+    koulutus: "Diplomi-insinööri, tietojenkäsittelytiede, fysiikka, kemia ja matemaattiset tieteet",
+    title: "Tekniikan ja DI-valintakokeen valmennuskurssi 2027",
+    href: "https://valintakoea.fi",
+    rating: 4.6,
+    price: "99 €",
+    oldPrice: "199 €",
+    vipPrice: "149 €",
+    vipOldPrice: "249 €",
+    seatsLeft: 15,
+    closing: "Ryhmäkoko rajattu henkilökohtaisen ohjauksen vuoksi",
+    popular: false,
+    recommend:
+      "Pidät logiikasta, matematiikasta ja asioiden rakentamisesta. Tekniikan valintakoe (A) mittaa ongelmanratkaisua — sitä voi treenata, ja sillä erotut.",
+    perks: [
+      "Matematiikan, fysiikan ja kemian ongelmanratkaisu",
+      "Yhteinen osio ja eriytyvät osiot harjoiteltuna",
+      "Viikoittaiset live-klinikat ja tallenteet",
+    ],
+  },
+  {
+    code: "C",
+    field: "Biologia & ympäristötieteet",
+    koulutus: "Biologia, ympäristötieteet, elintarviketieteet, geotieteet, maantiede ja metsätieteet",
+    title: "Biologian ja luonnontieteiden valmennuskurssi 2027",
+    href: "https://valintakoec.fi",
+    rating: 4.6,
+    price: "99 €",
+    oldPrice: "199 €",
+    vipPrice: "149 €",
+    vipOldPrice: "249 €",
+    seatsLeft: 11,
+    closing: "Kevään ryhmän paikat täyttyvät",
+    popular: false,
+    recommend:
+      "Sinua kiehtoo luonto, elämä ja ympäristö. Biologian valintakoe (C) painottaa aineiston soveltamista — harjoittelu tekee siitä vahvuutesi.",
+    perks: [
+      "Biologian ja ympäristötieteiden ydinsisällöt haltuun",
+      "Aineistotehtävien analysointi ja vastaustekniikka",
+      "Viikoittaiset live-klinikat ja tallenteet",
+    ],
+  },
+];
+
+export const getCourse = (code) => COURSES.find((c) => c.code === code);
