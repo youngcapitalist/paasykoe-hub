@@ -26,12 +26,12 @@ const NAV = ["Etusivu", "Koulutukset & hakeminen", "Todistusvalinta", "Valintako
 
 /* ---------------- data ---------------- */
 const EXAMS = [
-  { code: "A", field: "Kasvatusala ja psykologia", sisalto: "Soveltuvuuskoe ja aineistokoe.", alat: "Luokanopettaja, varhaiskasvatus, erityisopettaja, opinto-ohjaaja sekä psykologia ja logopedia." },
-  { code: "B", field: "Lääketieteelliset alat", sisalto: "Biologian, fysiikan ja kemian lukion oppimääriin perustuva koe.", alat: "Lääketiede, hammaslääketiede ja eläinlääketiede." },
-  { code: "C", field: "Tekniikka ja luonnontieteet", sisalto: "Matematiikan, fysiikan ja kemian ongelmanratkaisutaidot. Kokeessa on yhteinen osio ja eriytyviä osioita.", alat: "Insinööritieteet, tietojenkäsittely, fysiikka, kemia." },
+  { code: "A", field: "Kasvatusala ja psykologia", href: "https://valintakoea.fi", sisalto: "Soveltuvuuskoe ja aineistokoe.", alat: "Luokanopettaja, varhaiskasvatus, erityisopettaja, opinto-ohjaaja sekä psykologia ja logopedia." },
+  { code: "B", field: "Lääketieteelliset alat", href: "https://valintakoeb.fi", sisalto: "Biologian, fysiikan ja kemian lukion oppimääriin perustuva koe.", alat: "Lääketiede, hammaslääketiede ja eläinlääketiede." },
+  { code: "C", field: "Tekniikka ja luonnontieteet", href: "https://valintakoec.fi", sisalto: "Matematiikan, fysiikan ja kemian ongelmanratkaisutaidot. Kokeessa on yhteinen osio ja eriytyviä osioita.", alat: "Insinööritieteet, tietojenkäsittely, fysiikka, kemia." },
   { code: "D", field: "Kauppatieteet", sisalto: "Taloustiedon, matematiikan ja historian soveltaminen. Perustuu lukion oppimäärään ja ennakkomateriaaliin.", alat: "Kauppatieteet ja taloustiede." },
-  { code: "E", field: "Oikeustiede", sisalto: "Juridisen tiedon omaksuminen ja soveltaminen. Perustuu ennakkoon julkaistavaan aineistoon.", alat: "Oikeustiede (Helsinki, Turku, Joensuu, Rovaniemi)." },
-  { code: "F", field: "Yhteiskuntatieteet", sisalto: "Yhteiskuntaopin ja historian oppimääriin sekä aineistoon perustuva koe.", alat: "Valtio-oppi, sosiologia, viestintä." },
+  { code: "E", field: "Oikeustiede", href: "https://valintakoee.fi", sisalto: "Juridisen tiedon omaksuminen ja soveltaminen. Perustuu ennakkoon julkaistavaan aineistoon.", alat: "Oikeustiede (Helsinki, Turku, Joensuu, Rovaniemi)." },
+  { code: "F", field: "Yhteiskuntatieteet", href: "https://valintakoefpro.com", sisalto: "Yhteiskuntaopin ja historian oppimääriin sekä aineistoon perustuva koe.", alat: "Valtio-oppi, sosiologia, viestintä." },
   { code: "G", field: "Kielet ja viestintä", sisalto: "Kielellinen päättely ja aineiston ymmärtäminen.", alat: "Vieraat kielet, käännöstiede." },
   { code: "H", field: "Humanistiset tieteet", sisalto: "Aineistokoe, joka mittaa kulttuurista ja historiallista ymmärrystä.", alat: "Historia, kulttuurintutkimus, taiteiden tutkimus." },
   { code: "I", field: "Liikunta- ja terveystieteet", sisalto: "Terveystiedon oppimäärä ja fyysiset soveltuvuuskokeet (alakohtainen).", alat: "Liikuntapedagogiikka, fysioterapia." },
@@ -202,7 +202,13 @@ function ExamGrid() {
               <div className="mb-4 flex items-center gap-3">
                 <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-navy font-heading text-xl font-extrabold text-gold">{e.code}</span>
                 <h3 className="font-heading text-lg font-bold leading-snug text-navy">
-                  Valintakoe {e.code}
+                  {e.href ? (
+                    <a href={e.href} className="text-navy underline decoration-gold decoration-2 underline-offset-4 hover:text-navy-light">
+                      Valintakoe {e.code}
+                    </a>
+                  ) : (
+                    <>Valintakoe {e.code}</>
+                  )}
                   <span className="block text-sm font-semibold text-navy/60">{e.field}</span>
                 </h3>
               </div>
