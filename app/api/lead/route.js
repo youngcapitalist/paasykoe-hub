@@ -47,8 +47,17 @@ export async function POST(request) {
     // Normalisoi: poista mahdollinen /rest/v1(/) ja loppukauttaviivat,
     // jotta sekä perus-URL että REST-endpoint kelpaavat.
     const base = supaUrl.replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
+    // Ihmisluettavat kentät Supabasen taulunäkymää varten
+    const bestExam =
+      lead.recommendedCode && lead.recommendedField
+        ? `Valintakoe ${lead.recommendedCode} — ${lead.recommendedField}`
+        : null;
+    const preferredExam =
+      lead.preferredCode && lead.preferredField
+        ? `Valintakoe ${lead.preferredCode} — ${lead.preferredField}`
+        : null;
     try {
-      const res = await fetch(`${base}/rest/v1/paasykoe_leads`, {
+      const res = await fetch(`${base}/rest/v1/valintakoe_hub_leads`, {
         method: "POST",
         headers: {
           apikey: supaKey,
@@ -59,6 +68,8 @@ export async function POST(request) {
         body: JSON.stringify({
           email: lead.email,
           name: lead.name,
+          best_exam: bestExam,
+          preferred_exam: preferredExam,
           preferred_code: lead.preferredCode,
           preferred_field: lead.preferredField,
           recommended_code: lead.recommendedCode,
