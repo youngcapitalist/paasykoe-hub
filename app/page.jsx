@@ -37,18 +37,15 @@ const EXAMS = [
   { code: "I", field: "Liikunta- ja terveystieteet", sisalto: "Terveystiedon oppimäärä ja fyysiset soveltuvuuskokeet (alakohtainen).", alat: "Liikuntapedagogiikka, fysioterapia." },
 ];
 
-// ⇩⇩⇩ VAIHDA NÄMÄ OMIIN KURSSILINKKEIHISI ⇩⇩⇩
-// Korvaa "#" omilla URL-osoitteillasi (esim. https://kurssisi.fi/laaketiede).
+// Kurssilinkit ja -tiedot. Hinnat, paikat ja sulkeutumispäivät ovat vielä
+// vahvistamattomia esimerkkejä — päivitä omilla luvuillasi.
 const COURSES = [
   {
     code: "B",
     field: "Lääketiede & hammaslääketiede",
     title: "Lääkiksen valmennuskurssi 2026",
-    href: "#", // TODO: oma linkki
-    rating: 4.9,
-    reviews: 1284,
-    students: "6 200+",
-    success: "Sisäänpäässeistä 8/10 valmistautui kurssillamme",
+    href: "https://valintakoeb.fi",
+    rating: 4.6,
     price: "490 €",
     oldPrice: "790 €",
     seatsLeft: 7,
@@ -57,18 +54,15 @@ const COURSES = [
     perks: [
       "Yli 1 200 koetehtävää ja 12 simuloitua koetta",
       "Henkilökohtainen palaute alan opettajilta",
-      "Sisäänpääsytakuu — tai seuraava kurssi veloituksetta",
+      "Viikoittaiset live-klinikat ja tallenteet",
     ],
   },
   {
     code: "E",
     field: "Oikeustiede",
     title: "Oikiksen valmennuskurssi 2026",
-    href: "#", // TODO: oma linkki
-    rating: 4.8,
-    reviews: 742,
-    students: "3 400+",
-    success: "94 % suosittelee kurssia ystävälleen",
+    href: "https://valintakoee.fi",
+    rating: 4.6,
     price: "390 €",
     oldPrice: "590 €",
     seatsLeft: 12,
@@ -81,14 +75,11 @@ const COURSES = [
     ],
   },
   {
-    code: "D",
+    code: "F",
     field: "Kauppatieteet",
     title: "Kauppiksen valmennuskurssi 2026",
-    href: "#", // TODO: oma linkki
-    rating: 4.9,
-    reviews: 968,
-    students: "5 100+",
-    success: "Korkein keskimääräinen pistemäärä alalla",
+    href: "https://valintakoefpro.com",
+    rating: 4.6,
     price: "350 €",
     oldPrice: "520 €",
     seatsLeft: 9,
@@ -97,18 +88,15 @@ const COURSES = [
     perks: [
       "Matematiikka, taloustieto ja historia yhdessä paketissa",
       "Ennakkomateriaalin tiivistykset ja muistilistat",
-      "Sisäänpääsytakuu kirjallisella ehdolla",
+      "Henkilökohtainen opintopolku ja edistymisen seuranta",
     ],
   },
   {
     code: "A",
     field: "Psykologia & kasvatusala",
     title: "Psykologian valmennuskurssi 2026",
-    href: "#", // TODO: oma linkki
-    rating: 4.8,
-    reviews: 531,
-    students: "2 800+",
-    success: "Soveltuvuus- ja aineistokoe rinnakkain harjoiteltuna",
+    href: "https://valintakoea.fi",
+    rating: 4.6,
     price: "350 €",
     oldPrice: "490 €",
     seatsLeft: 15,
@@ -118,6 +106,23 @@ const COURSES = [
       "Aineistokokeen lukutekniikka ja aikataulutus",
       "Harjoituskokeet aidoissa koeolosuhteissa",
       "Mentorina alalle päässyt opiskelija",
+    ],
+  },
+  {
+    code: "C",
+    field: "Tekniikka & luonnontieteet (DI)",
+    title: "DI- ja tekniikan valmennuskurssi 2026",
+    href: "https://valintakoec.fi",
+    rating: 4.6,
+    price: "390 €",
+    oldPrice: "590 €",
+    seatsLeft: 11,
+    closing: "Kevään ryhmän paikat täyttyvät",
+    popular: false,
+    perks: [
+      "Matematiikan, fysiikan ja kemian ongelmanratkaisu",
+      "Yhteinen osio ja eriytyvät osiot harjoiteltuna",
+      "Viikoittaiset live-klinikat ja tallenteet",
     ],
   },
 ];
@@ -256,7 +261,7 @@ function Stars({ rating }) {
 //  • Niukkuus – rajatut paikat ja sulkeutuva ilmoittautuminen
 //  • Sitoutuminen – ilmainen tasotesti madaltaa kynnystä ensiaskeleeseen
 //  • Vastavuoroisuus – ilmainen materiaali lahjana
-//  • Riskinpoisto – sisäänpääsytakuu
+//  • Ankkurointi – vertailuhinta tekee tarjouksesta edullisen
 function Courses() {
   return (
     <div id="valmennusmateriaalit" data-slot="valmennusmateriaalit" className="mt-14">
@@ -277,8 +282,8 @@ function Courses() {
       {/* Luottamuspalkki: auktoriteetti + sosiaalinen todiste */}
       <dl className="mt-8 grid gap-4 rounded-2xl border border-line bg-white p-6 sm:grid-cols-3">
         {[
-          ["17 500+", "valmentautunutta hakijaa"],
-          ["94 %", "suosittelisi kurssia ystävälleen"],
+          ["2 000+", "valmentautunutta hakijaa"],
+          ["4.6 / 5", "kurssien keskiarvosana"],
           ["Alan opettajat", "ja sisään päässeet mentorit"],
         ].map(([big, small]) => (
           <div key={small} className="text-center">
@@ -315,13 +320,9 @@ function Courses() {
             <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-navy/70">
               <Stars rating={c.rating} />
               <span className="font-semibold text-navy">{c.rating}/5</span>
-              <span>({c.reviews} arvostelua)</span>
-              <span aria-hidden>·</span>
-              <span>{c.students} opiskelijaa</span>
             </div>
-            <p className="mt-2 text-sm font-semibold text-navy/80">{c.success}</p>
 
-            {/* Hyödyt: auktoriteetti + riskinpoisto */}
+            {/* Hyödyt: auktoriteetti */}
             <ul className="mt-4 space-y-2 text-[15px] text-navy/80">
               {c.perks.map((p) => (
                 <li key={p} className="flex gap-2.5">
