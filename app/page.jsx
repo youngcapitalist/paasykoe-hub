@@ -285,11 +285,8 @@ function Courses() {
               ))}
             </ul>
 
-            {/* Niukkuus */}
+            {/* Aikaraja (ilmoittautuminen) */}
             <div className="mt-5 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-pill bg-gold/15 px-3 py-1 text-xs font-bold text-navy ring-1 ring-gold/40">
-                <span className="h-2 w-2 rounded-full bg-gold" /> Vain {c.seatsLeft} paikkaa jäljellä
-              </span>
               <span className="text-xs font-semibold text-navy/60">{c.closing}</span>
             </div>
 
@@ -309,6 +306,7 @@ function Courses() {
                     <span className="font-heading text-2xl font-extrabold text-white">{c.vipPrice}</span>
                     <span className="text-sm font-semibold text-white/40 line-through">{c.vipOldPrice}</span>
                   </div>
+                  <span className="mt-1 block text-[11px] font-semibold text-gold">Vain {c.seatsLeft} VIP-paikkaa jäljellä</span>
                 </div>
               </div>
               <a
