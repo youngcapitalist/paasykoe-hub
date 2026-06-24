@@ -175,7 +175,7 @@ function Stars({ rating }) {
 
 /* ---------------- valmennuskurssit (Cialdini-vaikuttaminen) ---------------- */
 // Vaikuttamisen periaatteet kohdennettuna (Cialdini):
-//  • Auktoriteetti  – alan opettajat, asiantuntijasisältö
+//  • Auktoriteetti  – opettajat ja sisään päässeet mentorit, asiantuntijasisältö
 //  • Sosiaalinen todiste – opiskelijamäärät, arvostelut, suositteluprosentti
 //  • Niukkuus – rajatut paikat ja sulkeutuva ilmoittautuminen
 //  • Sitoutuminen – ilmainen tasotesti madaltaa kynnystä ensiaskeleeseen
@@ -201,9 +201,9 @@ function Courses() {
       {/* Luottamuspalkki: auktoriteetti + sosiaalinen todiste */}
       <dl className="mt-8 grid gap-4 rounded-2xl border border-line bg-white p-6 sm:grid-cols-3">
         {[
-          ["2 000+", "valmentautunutta hakijaa"],
-          ["4.6 / 5", "kurssien keskiarvosana"],
-          ["Alan opettajat", "ja sisään päässeet mentorit"],
+          ["561", "opiskelijan luottama"],
+          ["4.7 / 5", "kurssien keskiarvosana"],
+          ["Opettajat", "ja sisään päässeet mentorit"],
         ].map(([big, small]) => (
           <div key={small} className="text-center">
             <dt className="font-heading text-2xl font-extrabold text-navy">{big}</dt>
