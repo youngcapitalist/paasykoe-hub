@@ -8,7 +8,7 @@ export const COURSES = [
     koulutus: "Lääketiede, hammaslääketiede, eläinlääketiede, farmasia ja biolääketiede",
     title: "Lääkiksen valmennuskurssi 2027",
     href: "https://valintakoeb.fi",
-    rating: 4.6,
+    rating: 4.8,
     price: "149 €",
     oldPrice: "299 €",
     vipPrice: "499 €",
@@ -20,8 +20,8 @@ export const COURSES = [
       "Sinua vetää puoleensa ihmisten auttaminen ja luonnontieteet. Lääketieteen valintakoe (B) on Suomen kilpailluin — siksi järjestelmällinen valmistautuminen ratkaisee.",
     perks: [
       "Yli 1 200 koetehtävää ja 12 simuloitua koetta",
-      "Henkilökohtainen palaute alan opettajilta",
-      "Viikoittaiset live-klinikat ja tallenteet",
+      "Live-klinikat keväällä ja tallenteet",
+      "Teoria ja painetut kirjat tulossa keväällä",
     ],
   },
   {
@@ -41,9 +41,9 @@ export const COURSES = [
     recommend:
       "Haluat tukea ja kasvattaa ihmisiä. Kasvatusalan valintakoe (E) yhdistää soveltuvuuden ja aineiston — oikealla tekniikalla erotut hakijajoukosta.",
     perks: [
-      "Soveltuvuus- ja aineistokoe harjoiteltuna rinnakkain",
-      "Viikoittaiset live-klinikat ja tallenteet",
-      "Aiempien vuosien mallivastaukset analysoituna",
+      "Soveltuvuus- ja aineistokokeen harjoitustehtävät",
+      "Live-klinikat keväällä ja tallenteet",
+      "Teoria ja painetut kirjat tulossa keväällä",
     ],
   },
   {
@@ -52,7 +52,7 @@ export const COURSES = [
     koulutus: "Kauppatieteet, taloustiede, tietojärjestelmätiede sekä ympäristö- ja elintarviketalous",
     title: "Kauppiksen valmennuskurssi 2027",
     href: "https://valintakoefpro.com",
-    rating: 4.6,
+    rating: 4.7,
     price: "99 €",
     oldPrice: "199 €",
     vipPrice: "149 €",
@@ -63,9 +63,10 @@ export const COURSES = [
     recommend:
       "Sinua kiinnostaa johtaminen, talous ja vaikuttaminen. Kauppatieteiden valintakoe (F) palkitsee ennakkomateriaalin hallinnan — ja siihen mentorimme on juuri päässyt sisään.",
     perks: [
-      "Matematiikka, taloustieto ja historia yhdessä paketissa",
-      "Ennakkomateriaalin tiivistykset ja muistilistat",
+      "Matematiikan ja taloustiedon harjoitustehtävät",
       "Mentorina alalle juuri tällä kurssilla päässyt opiskelija",
+      "Live-klinikat keväällä ja tallenteet",
+      "Teoria ja painetut kirjat tulossa keväällä",
     ],
   },
   {
@@ -74,7 +75,7 @@ export const COURSES = [
     koulutus: "Diplomi-insinööri, tietojenkäsittelytiede, fysiikka, kemia ja matemaattiset tieteet",
     title: "Tekniikan ja DI-valintakokeen valmennuskurssi 2027",
     href: "https://valintakoea.fi",
-    rating: 4.6,
+    rating: 4.9,
     price: "99 €",
     oldPrice: "199 €",
     vipPrice: "149 €",
@@ -85,9 +86,9 @@ export const COURSES = [
     recommend:
       "Pidät logiikasta, matematiikasta ja asioiden rakentamisesta. Tekniikan valintakoe (A) mittaa ongelmanratkaisua — sitä voi treenata, ja sillä erotut.",
     perks: [
-      "Matematiikan, fysiikan ja kemian ongelmanratkaisu",
-      "Yhteinen osio ja eriytyvät osiot harjoiteltuna",
-      "Viikoittaiset live-klinikat ja tallenteet",
+      "Matematiikan, fysiikan ja kemian harjoitustehtävät",
+      "Live-klinikat keväällä ja tallenteet",
+      "Teoria ja painetut kirjat tulossa keväällä",
     ],
   },
   {
@@ -96,7 +97,7 @@ export const COURSES = [
     koulutus: "Biologia, ympäristötieteet, elintarviketieteet, geotieteet, maantiede ja metsätieteet",
     title: "Biologian ja luonnontieteiden valmennuskurssi 2027",
     href: "https://valintakoec.fi",
-    rating: 4.6,
+    rating: 4.5,
     price: "99 €",
     oldPrice: "199 €",
     vipPrice: "149 €",
@@ -107,9 +108,9 @@ export const COURSES = [
     recommend:
       "Sinua kiehtoo luonto, elämä ja ympäristö. Biologian valintakoe (C) painottaa aineiston soveltamista — harjoittelu tekee siitä vahvuutesi.",
     perks: [
-      "Biologian ja ympäristötieteiden ydinsisällöt haltuun",
-      "Aineistotehtävien analysointi ja vastaustekniikka",
-      "Viikoittaiset live-klinikat ja tallenteet",
+      "Biologian ja ympäristötieteiden harjoitustehtävät",
+      "Live-klinikat keväällä ja tallenteet",
+      "Teoria ja painetut kirjat tulossa keväällä",
     ],
   },
 ];
