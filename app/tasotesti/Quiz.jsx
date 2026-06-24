@@ -299,16 +299,13 @@ export default function Quiz() {
           </ul>
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-pill bg-gold/15 px-3 py-1 text-xs font-bold text-navy ring-1 ring-gold/40">
-              <span className="h-2 w-2 rounded-full bg-gold" /> Vain {result.seatsLeft} paikkaa jäljellä
-            </span>
             <span className="text-xs font-semibold text-navy/60">{result.closing}</span>
           </div>
 
           <div className="mt-5 flex items-baseline gap-2 border-t border-line pt-5">
             <span className="font-heading text-2xl font-extrabold text-navy">{result.price}</span>
             <span className="text-sm font-semibold text-navy/40 line-through">{result.oldPrice}</span>
-            <span className="ml-auto text-sm font-semibold text-navy/60">VIP {result.vipPrice}</span>
+            <span className="ml-auto text-sm font-semibold text-navy/60">VIP {result.vipPrice} · vain {result.seatsLeft} paikkaa</span>
           </div>
 
           <a
