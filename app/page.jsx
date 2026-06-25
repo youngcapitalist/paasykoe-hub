@@ -1,4 +1,4 @@
-// Pääsykoe.fi — riippumaton tietopankki yliopistojen kansallisista valintakokeista.
+// Pääsykoe.fi — tietopankki yliopistojen kansallisista valintakokeista.
 // Semanttinen HTML (h1/h2/h3/p), virallinen ilme, JSON-LD (FAQPage) SEO:ta varten.
 
 import { COURSES } from "./courses";
@@ -91,7 +91,7 @@ function Hero() {
         <p className="mt-8 max-w-3xl text-lg leading-relaxed text-navy/85 md:text-xl">
           Yliopistot järjestävät yhdeksän kansallista valintakoetta (eli pääsykoetta). Kansalliset
           valintakokeet ovat digitaalisia ja ne suoritetaan omalla kannettavalla tietokoneella yliopiston
-          tiloissa. Tälle sivulle on koottu riippumaton ja ajantasainen tietopankki uudistuneista
+          tiloissa. Tälle sivulle on koottu ajantasainen tietopankki uudistuneista
           valintakokeista, koesisällöistä ja niihin valmistautumisesta. Valintakokeilla valitaan noin puolet
           uusista opiskelijoista kanditason opintoihin.
         </p>
@@ -182,7 +182,7 @@ function Preparation() {
         </h2>
         <p className="mt-6 max-w-3xl text-lg leading-relaxed text-navy/85">
           Vaikka uudet valintakokeet perustuvat vahvemmin lukion oppimääriin (kuten LOPS 2021), aineistojen
-          soveltaminen on edelleen keskiössä. Riippumattomien tilastojen mukaan järjestelmällinen
+          soveltaminen on edelleen keskiössä. Tilastojen mukaan järjestelmällinen
           valmistautuminen, vanhojen kokeiden simulointi ja oikeanlaisen vastaustekniikan harjoittelu ovat
           ratkaisevassa asemassa sisäänpääsyssä.
         </p>
@@ -380,7 +380,7 @@ function Footer() {
         <div>
           <Logo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
-            Riippumaton tietopankki yliopistojen kansallisista valintakokeista 2026–2027.
+            Tietopankki yliopistojen kansallisista valintakokeista 2026–2027.
           </p>
         </div>
         {cols.map(([title, links]) => (
@@ -393,7 +393,7 @@ function Footer() {
         ))}
       </div>
       <div className="border-t border-white/10">
-        <div className="mx-auto max-w-site px-6 py-5 text-xs text-white/50 md:px-8">© 2026 Pääsykoe.fi — riippumaton tietopankki.</div>
+        <div className="mx-auto max-w-site px-6 py-5 text-xs text-white/50 md:px-8">© 2026 Pääsykoe.fi — tietopankki.</div>
       </div>
     </footer>
   );
