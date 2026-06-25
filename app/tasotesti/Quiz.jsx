@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { COURSES, getCourse, EXAM_TARGETS } from "../courses";
 import {
-  WTP_QUESTIONS,
+  WTP_BUDGET_QUESTION,
+  WTP_EXTRA_QUESTIONS,
   computeWtpScore,
   wtpScoreToPriceEur,
   wtpScoreToVipPriceEur,
@@ -83,7 +84,15 @@ const QUESTIONS = [
   },
 ];
 
-const QUIZ_LENGTH = QUESTIONS.length;
+/** Budjettikysymys kyselyn keskellä (pain + 2 kiinnostusta, sitten budjetti, loput). */
+const BUDGET_STEP_INDEX = 3;
+const QUIZ_LENGTH = QUESTIONS.length + 1;
+
+function questionForStep(step) {
+  if (step === BUDGET_STEP_INDEX) return { type: "budget", ...WTP_BUDGET_QUESTION };
+  const qIndex = step > BUDGET_STEP_INDEX ? step - 1 : step;
+  return QUESTIONS[qIndex];
+}
 
 function algorithmCodeFromScores(scores) {
   let best = null;
@@ -174,26 +183,36 @@ export default function Quiz() {
     algorithmCourse && primaryCourse && algorithmCourse.code !== primaryCourse.code;
   const fCourse = getCourse(WTP_OFFER_EXAM);
 
-  const question = phase === "wtp" ? WTP_QUESTIONS[wtpStep] : QUESTIONS[step];
+  const question = phase === "wtp" ? WTP_EXTRA_QUESTIONS[wtpStep] : questionForStep(step);
 
   function answerQuiz(opt) {
-    const q = QUESTIONS[step];
-    if (q.type === "pain") {
+    const q = questionForStep(step);
+    let nextFutureTarget = futureTarget;
+    let nextScores = scores;
+
+    if (q.type === "budget") {
+      setWtpAnswers((prev) => ({ ...prev, budget: opt.points }));
+    } else if (q.type === "pain") {
       setPain(opt);
     } else if (q.type === "target") {
+      nextFutureTarget = opt.code;
       setFutureTarget(opt.code);
       if (COURSE_CODES.includes(opt.code)) {
-        setScores((prev) => ({ ...prev, [opt.code]: (prev[opt.code] || 0) + 2 }));
+        nextScores = { ...scores, [opt.code]: (scores[opt.code] || 0) + 2 };
+        setScores(nextScores);
       }
     } else if (opt.scores) {
-      setScores((prev) => {
-        const next = { ...prev };
-        for (const [code, pts] of Object.entries(opt.scores)) next[code] = (next[code] || 0) + pts;
-        return next;
-      });
+      nextScores = { ...scores };
+      for (const [code, pts] of Object.entries(opt.scores)) {
+        nextScores[code] = (nextScores[code] || 0) + pts;
+      }
+      setScores(nextScores);
     }
+
     if (step + 1 >= QUIZ_LENGTH) {
-      setPhase("email");
+      const nextAlgo = algorithmCodeFromScores(nextScores);
+      const nextPrimary = resolvePrimaryCode(nextFutureTarget, nextAlgo);
+      setPhase(recommendationsIncludeF(nextPrimary, nextAlgo) ? "wtp" : "email");
     } else {
       setStep((s) => s + 1);
     }
@@ -201,8 +220,8 @@ export default function Quiz() {
 
   function answerWtp(opt) {
     setWtpAnswers((prev) => ({ ...prev, [question.id]: opt.points }));
-    if (wtpStep + 1 >= WTP_QUESTIONS.length) {
-      finalizeAndShowResult();
+    if (wtpStep + 1 >= WTP_EXTRA_QUESTIONS.length) {
+      setPhase("email");
     } else {
       setWtpStep((s) => s + 1);
     }
@@ -230,7 +249,7 @@ export default function Quiz() {
     setSubmitting(true);
     setError(null);
     const chosen = futureTarget && futureTarget !== "unknown" ? futureTarget : primaryCode || algoCode;
-    const wtpScore = computeWtpScore(wtpAnswers, pain?.key);
+    const wtpScore = computeWtpScore(wtpAnswers);
     const offeredPriceEur = wtpScoreToPriceEur(wtpScore);
     const hasOffer = fInRecommendations;
     try {
@@ -246,7 +265,7 @@ export default function Quiz() {
           recommendedField: algorithmCourse?.field || primaryCourse?.field,
           painKey: pain?.key || null,
           scores,
-          wtpScore: hasOffer ? wtpScore : null,
+          wtpScore,
           offeredPriceEur: hasOffer ? offeredPriceEur : null,
           offerExam: hasOffer ? WTP_OFFER_EXAM : null,
         }),
@@ -286,15 +305,10 @@ export default function Quiz() {
 
   async function submitEmail(e) {
     e.preventDefault();
-    if (!emailValid || submitting) return;
-    if (fInRecommendations) {
-      setPhase("wtp");
-      return;
-    }
     await finalizeAndShowResult();
   }
 
-  /* ---------------- sähköposti (quizin jälkeen) ---------------- */
+  /* ---------------- sähköposti (viimeisenä ennen tulosta) ---------------- */
   if (phase === "email" && primaryCourse) {
     return (
       <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
@@ -346,16 +360,16 @@ export default function Quiz() {
     );
   }
 
-  /* ---------------- WTP (vain jos F suosituksissa, quizin lopussa) ---------------- */
+  /* ---------------- WTP-lisäkysymykset (F-suositus, ennen sähköpostia) ---------------- */
   if (phase === "wtp") {
-    const wtpProgress = ((wtpStep + 1) / WTP_QUESTIONS.length) * 100;
+    const wtpProgress = ((wtpStep + 1) / WTP_EXTRA_QUESTIONS.length) * 100;
     return (
       <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
         <span className="inline-flex items-center gap-2 rounded-pill bg-gold/15 px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/40">
           Viimeiset kysymykset
         </span>
         <div className="mt-5 flex items-center justify-between text-xs font-semibold text-navy/50">
-          <span>Kysymys {wtpStep + 1} / {WTP_QUESTIONS.length}</span>
+          <span>Kysymys {wtpStep + 1} / {WTP_EXTRA_QUESTIONS.length}</span>
           <span>{Math.round(wtpProgress)} %</span>
         </div>
         <div className="mt-2 h-2 w-full overflow-hidden rounded-pill bg-mist">
@@ -374,9 +388,14 @@ export default function Quiz() {
               key={opt.label}
               onClick={() => answerWtp(opt)}
               disabled={submitting}
-              className="group flex w-full items-center justify-between gap-4 rounded-xl border border-line bg-white px-5 py-4 text-left text-[15px] font-medium text-navy transition-colors hover:border-navy hover:bg-mist disabled:opacity-50"
+              className="group flex w-full items-center justify-between gap-4 rounded-xl border border-line bg-white px-5 py-4 text-left transition-colors hover:border-navy hover:bg-mist disabled:opacity-50"
             >
-              <span>{opt.label}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-semibold text-navy">{opt.label}</span>
+                {opt.hint && (
+                  <span className="mt-1 block text-sm font-normal leading-relaxed text-navy/65">{opt.hint}</span>
+                )}
+              </span>
               <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-mist text-navy/40 transition-colors group-hover:bg-navy group-hover:text-gold">
                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </span>
@@ -515,9 +534,14 @@ export default function Quiz() {
           <button
             key={opt.label}
             onClick={() => answerQuiz(opt)}
-            className="group flex w-full items-center justify-between gap-4 rounded-xl border border-line bg-white px-5 py-4 text-left text-[15px] font-medium text-navy transition-colors hover:border-navy hover:bg-mist"
+            className="group flex w-full items-center justify-between gap-4 rounded-xl border border-line bg-white px-5 py-4 text-left transition-colors hover:border-navy hover:bg-mist"
           >
-            <span>{opt.label}</span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-medium text-navy">{opt.label}</span>
+              {opt.hint && (
+                <span className="mt-1 block text-sm font-normal leading-relaxed text-navy/65">{opt.hint}</span>
+              )}
+            </span>
             <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-mist text-navy/40 transition-colors group-hover:bg-navy group-hover:text-gold">
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </span>
