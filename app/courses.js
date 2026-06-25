@@ -116,3 +116,17 @@ export const COURSES = [
 ];
 
 export const getCourse = (code) => COURSES.find((c) => c.code === code);
+
+// Kaikki 9 kansallista valintakoetta hakukohteen valintaa varten
+// (myös ne, joille ei ole kurssia). Käytetään tasotestin valikoissa.
+export const EXAM_TARGETS = [
+  { code: "A", field: "Tekniikka & luonnontieteet (DI)" },
+  { code: "B", field: "Lääke- ja terveystieteet" },
+  { code: "C", field: "Biologia & ympäristötieteet" },
+  { code: "D", field: "Psykologia & hyvinvointi" },
+  { code: "E", field: "Kasvatusala" },
+  { code: "F", field: "Kauppatieteet" },
+  { code: "G", field: "Oikeus- & yhteiskuntatieteet" },
+  { code: "H", field: "Humanistiset tieteet" },
+  { code: "I", field: "Kielet" },
+];

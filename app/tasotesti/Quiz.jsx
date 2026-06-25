@@ -1,7 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { COURSES, getCourse } from "../courses";
+import { COURSES, getCourse, EXAM_TARGETS } from "../courses";
+
+const COURSE_CODES = ["A", "B", "C", "E", "F"]; // alat, joille on kurssi
+const targetField = (code) =>
+  code === "unknown" ? "En tiedä vielä" : EXAM_TARGETS.find((t) => t.code === code)?.field || null;
 
 /* ---------------- kysymykset ---------------- */
 // type "pain"     -> kipupiste, ei pisteytä alaa vaan personoi tuloksen
@@ -61,6 +65,14 @@ const QUESTIONS = [
       { label: "Tavoitteellinen ja ulospäinsuuntautunut", scores: { F: 2 } },
     ],
   },
+  {
+    type: "target",
+    q: "Missä hakukohteessa näkisit itsesi tulevaisuudessa?",
+    options: [
+      ...EXAM_TARGETS.map((t) => ({ label: `Valintakoe ${t.code} — ${t.field}`, code: t.code })),
+      { label: "En tiedä vielä", code: "unknown" },
+    ],
+  },
 ];
 
 const TOTAL = QUESTIONS.length;
@@ -81,6 +93,7 @@ export default function Quiz() {
   const [step, setStep] = useState(0); // 0..TOTAL-1, sitten TOTAL = tulos
   const [scores, setScores] = useState({});
   const [pain, setPain] = useState(null);
+  const [futureTarget, setFutureTarget] = useState(null); // valittu hakukohde (A–I tai "unknown")
 
   // liidigate
   const [submitted, setSubmitted] = useState(false);
@@ -108,6 +121,12 @@ export default function Quiz() {
   function answer(opt) {
     if (question.type === "pain") {
       setPain(opt);
+    } else if (question.type === "target") {
+      setFutureTarget(opt.code);
+      // jos valittu hakukohde vastaa kurssia, painota suositusta sen mukaan
+      if (COURSE_CODES.includes(opt.code)) {
+        setScores((prev) => ({ ...prev, [opt.code]: (prev[opt.code] || 0) + 2 }));
+      }
     } else if (opt.scores) {
       setScores((prev) => {
         const next = { ...prev };
@@ -122,6 +141,7 @@ export default function Quiz() {
     setStep(0);
     setScores({});
     setPain(null);
+    setFutureTarget(null);
     setSubmitted(false);
     setEmail("");
     setName("");
@@ -137,8 +157,7 @@ export default function Quiz() {
     if (!emailValid || !consent || submitting) return;
     setSubmitting(true);
     setError(null);
-    const chosen = preferredCode || result.code;
-    const chosenCourse = getCourse(chosen);
+    const chosen = preferredCode || futureTarget || result.code;
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
@@ -147,7 +166,7 @@ export default function Quiz() {
           email: email.trim(),
           name: name.trim() || null,
           preferredCode: chosen,
-          preferredField: chosenCourse?.field || null,
+          preferredField: targetField(chosen),
           recommendedCode: result.code,
           recommendedField: result.field,
           painKey: pain?.key || null,
@@ -165,7 +184,7 @@ export default function Quiz() {
 
   /* ---------------- liidigate (sähköposti ennen tulosta) ---------------- */
   if (isResult && result && !submitted) {
-    const chosen = preferredCode || result.code;
+    const chosen = preferredCode || futureTarget || result.code;
     return (
       <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
         <span className="inline-flex items-center gap-2 rounded-pill bg-gold/15 px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/40">
@@ -215,13 +234,14 @@ export default function Quiz() {
               onChange={(e) => setPreferredCode(e.target.value)}
               className="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-navy outline-none transition-colors focus:border-navy"
             >
-              {COURSES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  Valintakoe {c.code} — {c.field}
+              {EXAM_TARGETS.map((t) => (
+                <option key={t.code} value={t.code}>
+                  Valintakoe {t.code} — {t.field}
                 </option>
               ))}
+              <option value="unknown">En tiedä vielä</option>
             </select>
-            <p className="mt-1.5 text-xs text-navy/50">Esitäytetty testituloksen perusteella — voit vaihtaa.</p>
+            <p className="mt-1.5 text-xs text-navy/50">Esitäytetty valintasi / testituloksen perusteella — voit vaihtaa.</p>
           </div>
 
           <label className="flex items-start gap-3 text-sm text-navy/75">
