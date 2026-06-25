@@ -2,16 +2,21 @@
 
 import { useMemo, useState } from "react";
 import { COURSES, getCourse, EXAM_TARGETS } from "../courses";
-import { WTP_QUESTIONS, computeWtpScore, wtpScoreToPriceEur, formatPriceEur, resolvePrimaryCode, qualifiesForWtpOffer } from "../../lib/wtp";
+import {
+  WTP_QUESTIONS,
+  computeWtpScore,
+  wtpScoreToPriceEur,
+  formatPriceEur,
+  resolvePrimaryCode,
+  recommendationsIncludeF,
+  WTP_OFFER_EXAM,
+} from "../../lib/wtp";
 import { persistHubOffer } from "../../lib/wtp-persist";
 
-const COURSE_CODES = ["A", "B", "C", "E", "F"]; // alat, joille on kurssi
+const COURSE_CODES = ["A", "B", "C", "E", "F"];
 const targetField = (code) =>
   code === "unknown" ? "En tiedä vielä" : EXAM_TARGETS.find((t) => t.code === code)?.field || null;
 
-/* ---------------- kysymykset ---------------- */
-// type "pain"     -> kipupiste, ei pisteytä alaa vaan personoi tuloksen
-// type "interest" -> kiinnostus/vahvuus, pisteyttää alat (koodi -> pisteet)
 const QUESTIONS = [
   {
     type: "pain",
@@ -77,8 +82,16 @@ const QUESTIONS = [
   },
 ];
 
-const TOTAL_INTEREST = QUESTIONS.length;
-const TOTAL = TOTAL_INTEREST + WTP_QUESTIONS.length;
+const QUIZ_LENGTH = QUESTIONS.length;
+
+function algorithmCodeFromScores(scores) {
+  let best = null;
+  for (const c of COURSES) {
+    const s = scores[c.code] || 0;
+    if (best === null || s > best.s) best = c.code;
+  }
+  return best;
+}
 
 function Stars({ rating }) {
   return (
@@ -92,51 +105,81 @@ function Stars({ rating }) {
   );
 }
 
+function CoursePricing({ course, wtpOffer, wtpForThisCourse }) {
+  if (wtpForThisCourse && wtpOffer?.priceEur) {
+    return (
+      <div className="mt-5 border-t border-line pt-5 space-y-4">
+        <div>
+          <span className="inline-flex items-center gap-2 rounded-pill bg-gold/20 px-3 py-1 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/50">
+            Kurssitarjous
+          </span>
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <span className="font-heading text-2xl font-extrabold text-navy">PRO {formatPriceEur(wtpOffer.priceEur)}</span>
+            <span className="font-heading text-lg font-bold text-navy/70">VIP {formatPriceEur(wtpOffer.vipPriceEur)}</span>
+          </div>
+        </div>
+        <a
+          href={wtpOffer.checkoutUrl}
+          className="flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
+        >
+          Siirry kurssisivulle
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="mt-5 flex items-baseline gap-2 border-t border-line pt-5">
+        <span className="font-heading text-2xl font-extrabold text-navy">{course.price}</span>
+        <span className="text-sm font-semibold text-navy/40 line-through">{course.oldPrice}</span>
+        <span className="ml-auto text-sm font-semibold text-navy/60">VIP {course.vipPrice}</span>
+      </div>
+      <a
+        href={course.href}
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
+      >
+        Varaa paikkasi kurssille
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </a>
+    </>
+  );
+}
+
 export default function Quiz() {
-  const [step, setStep] = useState(0); // 0..TOTAL-1, sitten TOTAL = tulos
+  const [phase, setPhase] = useState("quiz"); // quiz | email | wtp | result
+  const [step, setStep] = useState(0);
+  const [wtpStep, setWtpStep] = useState(0);
   const [scores, setScores] = useState({});
   const [pain, setPain] = useState(null);
-  const [futureTarget, setFutureTarget] = useState(null); // valittu hakukohde (A–I tai "unknown")
+  const [futureTarget, setFutureTarget] = useState(null);
   const [wtpAnswers, setWtpAnswers] = useState({});
 
-  // liidigate + WTP-tarjous (F)
-  const [submitted, setSubmitted] = useState(false);
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [preferredCode, setPreferredCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [wtpOffer, setWtpOffer] = useState(null); // { token, priceEur, checkoutUrl, wtpScore }
+  const [wtpOffer, setWtpOffer] = useState(null);
 
-  const isResult = step >= TOTAL;
-  const isWtpStep = step >= TOTAL_INTEREST && step < TOTAL;
-  const question = isWtpStep ? WTP_QUESTIONS[step - TOTAL_INTEREST] : QUESTIONS[step];
-
-  const algorithmCourse = useMemo(() => {
-    if (!isResult) return null;
-    let best = null;
-    for (const c of COURSES) {
-      const s = scores[c.code] || 0;
-      if (best === null || s > best.s) best = { code: c.code, s };
-    }
-    return best ? getCourse(best.code) : null;
-  }, [isResult, scores]);
-
-  const primaryCode = useMemo(() => {
-    if (!isResult) return null;
-    return resolvePrimaryCode(futureTarget, algorithmCourse?.code);
-  }, [isResult, futureTarget, algorithmCourse]);
-
+  const algoCode = useMemo(() => algorithmCodeFromScores(scores), [scores]);
+  const algorithmCourse = useMemo(() => (algoCode ? getCourse(algoCode) : null), [algoCode]);
+  const primaryCode = useMemo(
+    () => (futureTarget !== null ? resolvePrimaryCode(futureTarget, algoCode) : null),
+    [futureTarget, algoCode]
+  );
   const primaryCourse = primaryCode ? getCourse(primaryCode) : null;
+  const fInRecommendations = recommendationsIncludeF(primaryCode, algoCode);
   const showAltSuggestion =
     algorithmCourse && primaryCourse && algorithmCourse.code !== primaryCourse.code;
+  const fCourse = getCourse(WTP_OFFER_EXAM);
 
-  function answer(opt) {
-    if (isWtpStep) {
-      setWtpAnswers((prev) => ({ ...prev, [question.id]: opt.points }));
-    } else if (question.type === "pain") {
+  const question = phase === "wtp" ? WTP_QUESTIONS[wtpStep] : QUESTIONS[step];
+
+  function answerQuiz(opt) {
+    const q = QUESTIONS[step];
+    if (q.type === "pain") {
       setPain(opt);
-    } else if (question.type === "target") {
+    } else if (q.type === "target") {
       setFutureTarget(opt.code);
       if (COURSE_CODES.includes(opt.code)) {
         setScores((prev) => ({ ...prev, [opt.code]: (prev[opt.code] || 0) + 2 }));
@@ -148,51 +191,62 @@ export default function Quiz() {
         return next;
       });
     }
-    setStep((s) => s + 1);
+    if (step + 1 >= QUIZ_LENGTH) {
+      setPhase("email");
+    } else {
+      setStep((s) => s + 1);
+    }
+  }
+
+  function answerWtp(opt) {
+    setWtpAnswers((prev) => ({ ...prev, [question.id]: opt.points }));
+    if (wtpStep + 1 >= WTP_QUESTIONS.length) {
+      finalizeAndShowResult();
+    } else {
+      setWtpStep((s) => s + 1);
+    }
   }
 
   function restart() {
+    setPhase("quiz");
     setStep(0);
+    setWtpStep(0);
     setScores({});
     setPain(null);
     setFutureTarget(null);
     setWtpAnswers({});
-    setSubmitted(false);
     setEmail("");
-    setName("");
-    setPreferredCode("");
     setError(null);
     setWtpOffer(null);
+    setSubmitting(false);
   }
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-  async function submitLead(e) {
-    e.preventDefault();
+  async function finalizeAndShowResult() {
     if (!emailValid || submitting) return;
     setSubmitting(true);
     setError(null);
-    const chosen = futureTarget && futureTarget !== "unknown" ? futureTarget : primaryCode || algorithmCourse?.code;
+    const chosen = futureTarget && futureTarget !== "unknown" ? futureTarget : primaryCode || algoCode;
     const wtpScore = computeWtpScore(wtpAnswers, pain?.key);
     const offeredPriceEur = wtpScoreToPriceEur(wtpScore);
-    const offerCode = primaryCode;
-    const hasOffer = offerCode && qualifiesForWtpOffer(offerCode);
+    const hasOffer = fInRecommendations;
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email.trim(),
-          name: name.trim() || null,
+          name: null,
           preferredCode: chosen,
           preferredField: targetField(chosen),
-          recommendedCode: algorithmCourse?.code || primaryCode,
+          recommendedCode: algoCode || primaryCode,
           recommendedField: algorithmCourse?.field || primaryCourse?.field,
           painKey: pain?.key || null,
           scores,
-          wtpScore,
+          wtpScore: hasOffer ? wtpScore : null,
           offeredPriceEur: hasOffer ? offeredPriceEur : null,
-          offerExam: hasOffer ? offerCode : null,
+          offerExam: hasOffer ? WTP_OFFER_EXAM : null,
         }),
       });
       if (!res.ok) throw new Error("request_failed");
@@ -204,7 +258,7 @@ export default function Quiz() {
           body: JSON.stringify({
             email: email.trim(),
             wtpScore,
-            examCode: offerCode,
+            examCode: WTP_OFFER_EXAM,
           }),
         });
         if (offerRes.ok) {
@@ -219,16 +273,26 @@ export default function Quiz() {
         }
       }
 
-      setSubmitted(true);
-    } catch (err) {
+      setPhase("result");
+    } catch {
       setError("Lähetys ei onnistunut. Tarkista yhteys ja yritä uudelleen.");
     } finally {
       setSubmitting(false);
     }
   }
 
-  /* ---------------- liidigate (sähköposti ennen tulosta) ---------------- */
-  if (isResult && primaryCourse && !submitted) {
+  async function submitEmail(e) {
+    e.preventDefault();
+    if (!emailValid || submitting) return;
+    if (fInRecommendations) {
+      setPhase("wtp");
+      return;
+    }
+    await finalizeAndShowResult();
+  }
+
+  /* ---------------- sähköposti (quizin jälkeen) ---------------- */
+  if (phase === "email" && primaryCourse) {
     return (
       <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
         <span className="inline-flex items-center gap-2 rounded-pill bg-gold/15 px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/40">
@@ -238,11 +302,12 @@ export default function Quiz() {
           Löysimme sinulle sopivimman alan 🎯
         </h2>
         <p className="mt-3 text-[15px] leading-relaxed text-navy/80">
-          Kirjoita sähköpostisi, niin näet tuloksesi heti — ja saat henkilökohtaisen suosituksen sekä
-          kurssitarjouksen myös sähköpostiisi.
+          Kirjoita sähköpostisi, niin näet tuloksesi heti
+          {fInRecommendations ? " — ja saat henkilökohtaisen kurssitarjouksen" : ""}
+          {" "}myös sähköpostiisi.
         </p>
 
-        <form onSubmit={submitLead} className="mt-6 space-y-4">
+        <form onSubmit={submitEmail} className="mt-6 space-y-4">
           <div>
             <label htmlFor="lead-email" className="sr-only">Sähköposti</label>
             <input
@@ -265,7 +330,7 @@ export default function Quiz() {
             disabled={!emailValid || submitting}
             className="flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {submitting ? "Lähetetään…" : "Näytä tulokseni"}
+            {submitting ? "Lähetetään…" : fInRecommendations ? "Jatka" : "Näytä tulokseni"}
             {!submitting && (
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             )}
@@ -278,8 +343,54 @@ export default function Quiz() {
     );
   }
 
+  /* ---------------- WTP (vain jos F suosituksissa, quizin lopussa) ---------------- */
+  if (phase === "wtp") {
+    const wtpProgress = ((wtpStep + 1) / WTP_QUESTIONS.length) * 100;
+    return (
+      <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
+        <span className="inline-flex items-center gap-2 rounded-pill bg-gold/15 px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/40">
+          Viimeiset kysymykset
+        </span>
+        <div className="mt-5 flex items-center justify-between text-xs font-semibold text-navy/50">
+          <span>Kysymys {wtpStep + 1} / {WTP_QUESTIONS.length}</span>
+          <span>{Math.round(wtpProgress)} %</span>
+        </div>
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-pill bg-mist">
+          <div className="h-full rounded-pill bg-gold transition-all" style={{ width: `${wtpProgress}%` }} />
+        </div>
+
+        <h2 className="mt-7 font-heading text-xl font-extrabold leading-snug text-navy md:text-2xl">
+          {question.q}
+        </h2>
+
+        {error && <p className="mt-4 text-sm font-semibold text-red-600">{error}</p>}
+
+        <div className="mt-6 space-y-3">
+          {question.options.map((opt) => (
+            <button
+              key={opt.label}
+              onClick={() => answerWtp(opt)}
+              disabled={submitting}
+              className="group flex w-full items-center justify-between gap-4 rounded-xl border border-line bg-white px-5 py-4 text-left text-[15px] font-medium text-navy transition-colors hover:border-navy hover:bg-mist disabled:opacity-50"
+            >
+              <span>{opt.label}</span>
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-mist text-navy/40 transition-colors group-hover:bg-navy group-hover:text-gold">
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   /* ---------------- tulos ---------------- */
-  if (isResult && primaryCourse) {
+  if (phase === "result" && primaryCourse) {
+    const primaryIsF = primaryCode === WTP_OFFER_EXAM;
+    const altIsF = showAltSuggestion && algorithmCourse?.code === WTP_OFFER_EXAM;
+    const showAltCard =
+      altIsF || (primaryIsF && showAltSuggestion && algorithmCourse?.code !== WTP_OFFER_EXAM);
+
     return (
       <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
         <span className="inline-flex items-center gap-2 rounded-pill bg-gold/15 px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/40">
@@ -297,7 +408,7 @@ export default function Quiz() {
         </h2>
         <p className="mt-3 text-[15px] leading-relaxed text-navy/80">{primaryCourse.recommend}</p>
 
-        {showAltSuggestion && (
+        {showAltSuggestion && !showAltCard && (
           <div className="mt-5 rounded-xl border border-dashed border-line bg-white px-5 py-4">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Testin perusteella myös sopisi</h3>
             <p className="mt-1.5 text-[15px] text-navy/75">
@@ -311,6 +422,7 @@ export default function Quiz() {
           <p className="mt-1.5 text-[15px] text-navy/80">{primaryCourse.koulutus}</p>
         </div>
 
+        {/* Ensisijainen kurssi */}
         <div className="mt-8 rounded-2xl border-2 border-gold bg-white p-6 ring-2 ring-gold/30">
           <div className="flex items-center gap-3">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{primaryCourse.code}</span>
@@ -336,42 +448,38 @@ export default function Quiz() {
             <span className="text-xs font-semibold text-navy/60">{primaryCourse.closing}</span>
           </div>
 
-          {wtpOffer?.priceEur ? (
-            <div className="mt-5 border-t border-line pt-5 space-y-4">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-pill bg-gold/20 px-3 py-1 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/50">
-                  Kurssitarjous
-                </span>
-                <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                  <span className="font-heading text-2xl font-extrabold text-navy">PRO {formatPriceEur(wtpOffer.priceEur)}</span>
-                  <span className="font-heading text-lg font-bold text-navy/70">VIP {formatPriceEur(wtpOffer.vipPriceEur)}</span>
-                </div>
-              </div>
-              <a
-                href={wtpOffer.checkoutUrl}
-                className="flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
-              >
-                Siirry kurssisivulle
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-              </a>
-            </div>
-          ) : (
-            <>
-              <div className="mt-5 flex items-baseline gap-2 border-t border-line pt-5">
-                <span className="font-heading text-2xl font-extrabold text-navy">{primaryCourse.price}</span>
-                <span className="text-sm font-semibold text-navy/40 line-through">{primaryCourse.oldPrice}</span>
-                <span className="ml-auto text-sm font-semibold text-navy/60">VIP {primaryCourse.vipPrice}</span>
-              </div>
-              <a
-                href={primaryCourse.href}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
-              >
-                Varaa paikkasi kurssille
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-              </a>
-            </>
-          )}
+          <CoursePricing course={primaryCourse} wtpOffer={wtpOffer} wtpForThisCourse={primaryIsF} />
         </div>
+
+        {/* F vaihtoehtona kun ensisijainen on jokin muu */}
+        {altIsF && fCourse && (
+          <div className="mt-6 rounded-2xl border-2 border-gold/60 bg-white p-6 ring-1 ring-gold/20">
+            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Myös sinulle sopiva vaihtoehto</h3>
+            <div className="mt-4 flex items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{fCourse.code}</span>
+              <div>
+                <h4 className="font-heading text-lg font-bold leading-tight text-navy">{fCourse.title}</h4>
+                <p className="mt-0.5 text-sm text-navy/70">{fCourse.field}</p>
+              </div>
+            </div>
+            <CoursePricing course={fCourse} wtpOffer={wtpOffer} wtpForThisCourse />
+          </div>
+        )}
+
+        {/* Muu kurssi vaihtoehtona kun ensisijainen on F */}
+        {primaryIsF && showAltSuggestion && algorithmCourse && algorithmCourse.code !== WTP_OFFER_EXAM && (
+          <div className="mt-6 rounded-2xl border border-line bg-white p-6">
+            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Myös sinulle sopiva vaihtoehto</h3>
+            <div className="mt-4 flex items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{algorithmCourse.code}</span>
+              <div>
+                <h4 className="font-heading text-lg font-bold leading-tight text-navy">{algorithmCourse.title}</h4>
+                <p className="mt-0.5 text-sm text-navy/70">{algorithmCourse.field}</p>
+              </div>
+            </div>
+            <CoursePricing course={algorithmCourse} wtpOffer={null} wtpForThisCourse={false} />
+          </div>
+        )}
 
         <button onClick={restart} className="mt-6 text-sm font-semibold text-navy/60 underline underline-offset-4 hover:text-navy">
           Tee testi uudelleen
@@ -380,16 +488,19 @@ export default function Quiz() {
     );
   }
 
-  /* ---------------- kysymysnäkymä ---------------- */
+  /* ---------------- varsinaiset quiz-kysymykset ---------------- */
+  if (phase !== "quiz") return null;
+
+  const quizProgress = ((step + 1) / QUIZ_LENGTH) * 100;
+
   return (
     <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
-      {/* edistymispalkki */}
       <div className="flex items-center justify-between text-xs font-semibold text-navy/50">
-        <span>Kysymys {step + 1} / {TOTAL}</span>
-        <span>{Math.round((step / TOTAL) * 100)} %</span>
+        <span>Kysymys {step + 1} / {QUIZ_LENGTH}</span>
+        <span>{Math.round(quizProgress)} %</span>
       </div>
       <div className="mt-2 h-2 w-full overflow-hidden rounded-pill bg-mist">
-        <div className="h-full rounded-pill bg-gold transition-all" style={{ width: `${(step / TOTAL) * 100}%` }} />
+        <div className="h-full rounded-pill bg-gold transition-all" style={{ width: `${quizProgress}%` }} />
       </div>
 
       <h2 className="mt-7 font-heading text-xl font-extrabold leading-snug text-navy md:text-2xl">
@@ -400,7 +511,7 @@ export default function Quiz() {
         {question.options.map((opt) => (
           <button
             key={opt.label}
-            onClick={() => answer(opt)}
+            onClick={() => answerQuiz(opt)}
             className="group flex w-full items-center justify-between gap-4 rounded-xl border border-line bg-white px-5 py-4 text-left text-[15px] font-medium text-navy transition-colors hover:border-navy hover:bg-mist"
           >
             <span>{opt.label}</span>
