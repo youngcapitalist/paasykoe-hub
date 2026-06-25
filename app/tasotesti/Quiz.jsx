@@ -100,7 +100,6 @@ export default function Quiz() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [preferredCode, setPreferredCode] = useState("");
-  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -146,7 +145,6 @@ export default function Quiz() {
     setEmail("");
     setName("");
     setPreferredCode("");
-    setConsent(false);
     setError(null);
   }
 
@@ -154,7 +152,7 @@ export default function Quiz() {
 
   async function submitLead(e) {
     e.preventDefault();
-    if (!emailValid || !consent || submitting) return;
+    if (!emailValid || submitting) return;
     setSubmitting(true);
     setError(null);
     const chosen = preferredCode || futureTarget || result.code;
@@ -184,7 +182,6 @@ export default function Quiz() {
 
   /* ---------------- liidigate (sähköposti ennen tulosta) ---------------- */
   if (isResult && result && !submitted) {
-    const chosen = preferredCode || futureTarget || result.code;
     return (
       <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
         <span className="inline-flex items-center gap-2 rounded-pill bg-gold/15 px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/40">
@@ -194,71 +191,31 @@ export default function Quiz() {
           Löysimme sinulle sopivimman alan 🎯
         </h2>
         <p className="mt-3 text-[15px] leading-relaxed text-navy/80">
-          Kerro mihin lähetämme henkilökohtaisen suosituksesi ja kurssitarjouksesi. Saat tuloksen heti
-          ruudulle ja vahvistuksen sähköpostiisi.
+          Kirjoita sähköpostisi, niin näet tuloksesi heti — ja saat henkilökohtaisen suosituksen sekä
+          kurssitarjouksen myös sähköpostiisi.
         </p>
 
         <form onSubmit={submitLead} className="mt-6 space-y-4">
           <div>
-            <label htmlFor="lead-name" className="text-sm font-semibold text-navy">Etunimi <span className="font-normal text-navy/40">(valinnainen)</span></label>
-            <input
-              id="lead-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="given-name"
-              className="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-navy outline-none transition-colors focus:border-navy"
-              placeholder="Etunimi"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="lead-email" className="text-sm font-semibold text-navy">Sähköposti</label>
+            <label htmlFor="lead-email" className="sr-only">Sähköposti</label>
             <input
               id="lead-email"
               type="email"
               required
+              autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              className="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-navy outline-none transition-colors focus:border-navy"
-              placeholder="nimi@esimerkki.fi"
+              className="w-full rounded-xl border border-line bg-white px-4 py-3.5 text-[15px] text-navy outline-none transition-colors focus:border-navy"
+              placeholder="Sähköpostisi"
             />
           </div>
-
-          <div>
-            <label htmlFor="lead-target" className="text-sm font-semibold text-navy">Ensisijainen hakukohteesi</label>
-            <select
-              id="lead-target"
-              value={chosen}
-              onChange={(e) => setPreferredCode(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-line bg-white px-4 py-3 text-[15px] text-navy outline-none transition-colors focus:border-navy"
-            >
-              {EXAM_TARGETS.map((t) => (
-                <option key={t.code} value={t.code}>
-                  Valintakoe {t.code} — {t.field}
-                </option>
-              ))}
-              <option value="unknown">En tiedä vielä</option>
-            </select>
-            <p className="mt-1.5 text-xs text-navy/50">Esitäytetty valintasi / testituloksen perusteella — voit vaihtaa.</p>
-          </div>
-
-          <label className="flex items-start gap-3 text-sm text-navy/75">
-            <input
-              type="checkbox"
-              checked={consent}
-              onChange={(e) => setConsent(e.target.checked)}
-              className="mt-0.5 h-5 w-5 shrink-0 rounded border-line accent-navy"
-            />
-            <span>Haluan suosituksen ja kurssiviestit sähköpostiini ja hyväksyn tietojeni käsittelyn tätä tarkoitusta varten.</span>
-          </label>
 
           {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
 
           <button
             type="submit"
-            disabled={!emailValid || !consent || submitting}
+            disabled={!emailValid || submitting}
             className="flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting ? "Lähetetään…" : "Näytä tulokseni"}
@@ -266,7 +223,9 @@ export default function Quiz() {
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             )}
           </button>
-          <p className="text-center text-xs text-navy/40">Emme jaa tietojasi kolmansille osapuolille. Voit perua viestit milloin tahansa.</p>
+          <p className="text-center text-xs text-navy/40">
+            Lähettämällä saat tuloksesi ja kurssivinkit sähköpostiisi. Emme jaa tietojasi kolmansille — voit perua viestit milloin tahansa.
+          </p>
         </form>
       </div>
     );
