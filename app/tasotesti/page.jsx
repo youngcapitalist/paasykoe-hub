@@ -13,7 +13,7 @@ function Logo({ className = "h-10 w-10" }) {
     <svg viewBox="0 0 48 48" className={className} aria-hidden>
       <path d="M6 18V8a2 2 0 0 1 2-2h10" fill="none" stroke="white" strokeWidth="3" strokeLinecap="square" />
       <path d="M42 30v10a2 2 0 0 1-2 2H30" fill="none" stroke="white" strokeWidth="3" strokeLinecap="square" />
-      <circle cx="24" cy="26" r="11" fill="#FFC600" />
+      <circle cx="24" cy="26" r="11" fill="#6ee7b7" />
     </svg>
   );
 }
@@ -30,8 +30,7 @@ export default function TasotestiPage() {
         </div>
       </header>
 
-      <section className="relative overflow-hidden bg-white">
-        <div className="pointer-events-none absolute -left-40 top-0 -z-0 h-[480px] w-[480px] -translate-y-1/3 rounded-full bg-gold/90" />
+      <section className="relative overflow-hidden border-b border-line bg-white">
         <div className="relative z-10 mx-auto max-w-3xl px-6 py-14 md:px-8 md:py-20">
           <span className="inline-flex items-center gap-2 rounded-pill bg-navy px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-gold">
             Maksuton · 2 minuuttia

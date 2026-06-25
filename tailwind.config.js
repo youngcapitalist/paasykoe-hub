@@ -4,18 +4,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Virallinen yliopistohaku-paletti (kuvasta)
+        // Arvokas havunvihreä virastopaletti (ei keltaista). Token-nimet
+        // navy/gold säilytetään, mutta arvot ovat nyt vihreitä.
         navy: {
-          DEFAULT: "#0A2540", // tummansininen yläpalkki & otsikot
-          dark: "#06182B",
-          light: "#13345C",
+          DEFAULT: "#064e3b", // syvä havunvihreä (emerald-900) — yläpalkki & otsikot
+          dark: "#043125",
+          light: "#065f46", // emerald-800 — hover
         },
         gold: {
-          DEFAULT: "#FFC600", // kirkas keltainen tehoste
-          dark: "#F0B400",
+          DEFAULT: "#6ee7b7", // vaalea tehostevihreä (emerald-300) — kontrasti tummalla
+          dark: "#34d399", // emerald-400 — hover
         },
-        mist: "#F2F3F5", // vaalea harmaa osiotausta
-        line: "#E3E6EA",
+        mist: "#F1F5F3", // vaalea, hennon vihertävä osiotausta
+        line: "#E2E8E4",
       },
       fontFamily: {
         heading: ["var(--font-poppins)", "system-ui", "sans-serif"],
