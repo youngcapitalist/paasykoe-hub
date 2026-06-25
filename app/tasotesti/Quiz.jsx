@@ -12,7 +12,7 @@ import {
   recommendationsIncludeF,
   WTP_OFFER_EXAM,
 } from "../../lib/wtp";
-import { persistHubOffer } from "../../lib/wtp-persist";
+import { persistHubOffer, clearHubOffer } from "../../lib/wtp-persist";
 
 const COURSE_CODES = ["A", "B", "C", "E", "F"];
 const targetField = (code) =>
@@ -220,6 +220,7 @@ export default function Quiz() {
     setError(null);
     setWtpOffer(null);
     setSubmitting(false);
+    clearHubOffer();
   }
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
