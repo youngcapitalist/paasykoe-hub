@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --navy: #0a2540;
-  --gold: #ffc600;
+  --navy: #064e3b;
+  --gold: #6ee7b7;
 }
 
 html {

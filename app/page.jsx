@@ -10,7 +10,7 @@ function Logo({ className = "h-11 w-11" }) {
     <svg viewBox="0 0 48 48" className={className} aria-hidden>
       <path d="M6 18V8a2 2 0 0 1 2-2h10" fill="none" stroke="white" strokeWidth="3" strokeLinecap="square" />
       <path d="M42 30v10a2 2 0 0 1-2 2H30" fill="none" stroke="white" strokeWidth="3" strokeLinecap="square" />
-      <circle cx="24" cy="26" r="11" fill="#FFC600" />
+      <circle cx="24" cy="26" r="11" fill="#6ee7b7" />
     </svg>
   );
 }
@@ -83,8 +83,7 @@ function TopNav() {
 /* ---------------- hero ---------------- */
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-white">
-      <div className="pointer-events-none absolute -left-40 top-0 -z-0 h-[560px] w-[560px] -translate-y-1/3 rounded-full bg-gold" />
+    <section className="relative overflow-hidden border-b border-line bg-white">
       <div className="relative z-10 mx-auto max-w-site px-6 py-16 md:px-8 md:py-24">
         <h1 className="max-w-4xl font-heading text-4xl font-extrabold leading-[1.08] tracking-tight text-navy md:text-6xl">
           Yliopistojen kansalliset valintakokeet 2026–2027
