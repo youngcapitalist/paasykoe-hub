@@ -2,8 +2,9 @@ import { createOfferToken } from "../../../lib/offer-token";
 import {
   wtpScoreToPriceEur,
   wtpScoreToVipPriceEur,
+  wtpScoreIncludesLiveMasterclasses,
   WTP_MAX_EUR,
-  CHECKOUT_MIN_EUR,
+  WTP_OFFER_MIN_EUR,
   qualifiesForWtpOffer,
 } from "../../../lib/wtp";
 import { getCourse } from "../../../app/courses";
@@ -47,11 +48,21 @@ export async function POST(request) {
 
   const priceEur = wtpScoreToPriceEur(wtpScore);
   const vipPriceEur = wtpScoreToVipPriceEur(priceEur);
+  const liveMasterclasses = wtpScoreIncludesLiveMasterclasses(wtpScore);
   const amountCents = priceEur * 100;
   const vipAmountCents = vipPriceEur * 100;
 
   const token = createOfferToken(
-    { exam: examCode, amountCents, priceEur, vipAmountCents, vipPriceEur, wtpScore, email },
+    {
+      exam: examCode,
+      amountCents,
+      priceEur,
+      vipAmountCents,
+      vipPriceEur,
+      wtpScore,
+      email,
+      liveMasterclasses,
+    },
     secret
   );
 
@@ -64,7 +75,8 @@ export async function POST(request) {
     priceEur,
     vipPriceEur,
     wtpScore,
-    priceRange: { min: CHECKOUT_MIN_EUR, max: WTP_MAX_EUR },
+    liveMasterclasses,
+    priceRange: { min: WTP_OFFER_MIN_EUR, max: WTP_MAX_EUR },
     checkoutUrl: `${base}/?offer=${encodeURIComponent(token)}#pricing`,
   });
 }

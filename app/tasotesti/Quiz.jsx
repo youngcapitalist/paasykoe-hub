@@ -9,6 +9,8 @@ import {
   wtpScoreToPriceEur,
   wtpScoreToVipPriceEur,
   formatPriceEur,
+  wtpPriceIncludesConsultation,
+  WTP_CALENDLY_URL,
   resolvePrimaryCode,
   recommendationsIncludeF,
   WTP_OFFER_EXAM,
@@ -18,6 +20,11 @@ import { persistHubOffer, clearHubOffer } from "../../lib/wtp-persist";
 const COURSE_CODES = ["A", "B", "C", "E", "F"];
 const targetField = (code) =>
   code === "unknown" ? "En tiedä vielä" : EXAM_TARGETS.find((t) => t.code === code)?.field || null;
+
+const TARGET_OPTIONS = [
+  ...EXAM_TARGETS.map((t) => ({ label: `Valintakoe ${t.code} — ${t.field}`, code: t.code })),
+  { label: "En tiedä vielä", code: "unknown", exclusive: true },
+];
 
 const QUESTIONS = [
   {
@@ -29,6 +36,13 @@ const QUESTIONS = [
       { label: "Aika tuntuu loppuvan kesken ennen koetta", key: "time", reassure: "Aikaa on juuri sen verran kuin sen käyttää oikein. Strukturoitu valmennus säästää kuukausien hapuilun." },
       { label: "Pärjäänkö muita hakijoita paremmin?", key: "compete", reassure: "Erottuminen ratkaisee. Ne, jotka harjoittelevat oikeaa vastaustekniikkaa, ovat etulyöntiasemassa." },
     ],
+  },
+  {
+    type: "targets",
+    multi: true,
+    q: "Mitkä valintakokeista kuulostaa ennakkoon kiinnostavimmilta?",
+    hint: "Valitse yksi tai useampi — suositus perustuu valintoihisi.",
+    options: TARGET_OPTIONS,
   },
   {
     type: "interest",
@@ -74,17 +88,9 @@ const QUESTIONS = [
       { label: "Tavoitteellinen ja ulospäinsuuntautunut", scores: { F: 2 } },
     ],
   },
-  {
-    type: "target",
-    q: "Missä hakukohteessa näkisit itsesi tulevaisuudessa?",
-    options: [
-      ...EXAM_TARGETS.map((t) => ({ label: `Valintakoe ${t.code} — ${t.field}`, code: t.code })),
-      { label: "En tiedä vielä", code: "unknown" },
-    ],
-  },
 ];
 
-/** Budjettikysymys kyselyn keskellä (pain + 2 kiinnostusta, sitten budjetti, loput). */
+/** Budjettikysymys kyselyn keskellä (pain + kohteet + kiinnostus, sitten budjetti, loput). */
 const BUDGET_STEP_INDEX = 3;
 const QUIZ_LENGTH = QUESTIONS.length + 1;
 
@@ -95,12 +101,26 @@ function questionForStep(step) {
 }
 
 function algorithmCodeFromScores(scores) {
-  let best = null;
+  let bestCode = null;
+  let bestScore = -1;
   for (const c of COURSES) {
     const s = scores[c.code] || 0;
-    if (best === null || s > best.s) best = c.code;
+    if (s > bestScore) {
+      bestScore = s;
+      bestCode = c.code;
+    }
   }
-  return best;
+  return bestCode;
+}
+
+function applyTargetBoosts(scores, selectedTargets) {
+  const next = { ...scores };
+  for (const code of selectedTargets) {
+    if (code !== "unknown" && COURSE_CODES.includes(code)) {
+      next[code] = (next[code] || 0) + 3;
+    }
+  }
+  return next;
 }
 
 function Stars({ rating }) {
@@ -127,6 +147,9 @@ function CoursePricing({ course, wtpOffer, wtpForThisCourse }) {
             <span className="font-heading text-2xl font-extrabold text-navy">PRO {formatPriceEur(wtpOffer.priceEur)}</span>
             <span className="font-heading text-lg font-bold text-navy/70">VIP {formatPriceEur(wtpOffer.vipPriceEur ?? wtpScoreToVipPriceEur(wtpOffer.priceEur))}</span>
           </div>
+          {wtpOffer.liveMasterclasses && (
+            <p className="mt-2 text-sm text-navy/70">Sisältää 4× live-masterclassin keväällä</p>
+          )}
         </div>
         <a
           href={wtpOffer.checkoutUrl}
@@ -135,6 +158,26 @@ function CoursePricing({ course, wtpOffer, wtpForThisCourse }) {
           Siirry kurssisivulle
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </a>
+        {wtpPriceIncludesConsultation(wtpOffer.priceEur) && (
+          <div className="rounded-xl border border-dashed border-gold/50 bg-gold/5 px-5 py-4">
+            <p className="font-heading text-sm font-bold text-navy">Haluatko kuulla lisää ennen päätöstä?</p>
+            <p className="mt-2 text-sm leading-relaxed text-navy/75">
+              Voit ostaa suoraan tai varata ilmaisen 30 min kartoituspuhelun — käymme läpi paketin, masterclassit ja miten aloitat.
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-navy/60">
+              Puhelun pitää Valintakoe F -opiskelija, joka saavutti valintakokeessa sellaisen pistemäärän, että olisi päässyt sisään kaikkiin Valintakoe F -yliopistoihin, ja toimii tutorina Valintakoe-sovelluksessamme.
+            </p>
+            <a
+              href={WTP_CALENDLY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill border-2 border-navy bg-white px-5 py-3 font-heading text-sm font-bold text-navy transition-colors hover:bg-mist"
+            >
+              Varaa kartoituspuhelu
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
+            </a>
+          </div>
+        )}
       </div>
     );
   }
@@ -163,7 +206,7 @@ export default function Quiz() {
   const [wtpStep, setWtpStep] = useState(0);
   const [scores, setScores] = useState({});
   const [pain, setPain] = useState(null);
-  const [futureTarget, setFutureTarget] = useState(null);
+  const [selectedTargets, setSelectedTargets] = useState([]);
   const [wtpAnswers, setWtpAnswers] = useState({});
 
   const [email, setEmail] = useState("");
@@ -174,33 +217,59 @@ export default function Quiz() {
   const algoCode = useMemo(() => algorithmCodeFromScores(scores), [scores]);
   const algorithmCourse = useMemo(() => (algoCode ? getCourse(algoCode) : null), [algoCode]);
   const primaryCode = useMemo(
-    () => (futureTarget !== null ? resolvePrimaryCode(futureTarget, algoCode) : null),
-    [futureTarget, algoCode]
+    () =>
+      selectedTargets.length > 0
+        ? resolvePrimaryCode(selectedTargets, algoCode, scores)
+        : null,
+    [selectedTargets, algoCode, scores]
   );
   const primaryCourse = primaryCode ? getCourse(primaryCode) : null;
-  const fInRecommendations = recommendationsIncludeF(primaryCode, algoCode);
+  const fInRecommendations = recommendationsIncludeF(primaryCode, algoCode, selectedTargets);
   const showAltSuggestion =
     algorithmCourse && primaryCourse && algorithmCourse.code !== primaryCourse.code;
   const fCourse = getCourse(WTP_OFFER_EXAM);
 
   const question = phase === "wtp" ? WTP_EXTRA_QUESTIONS[wtpStep] : questionForStep(step);
 
+  function advanceQuiz(nextScores, nextSelectedTargets = selectedTargets) {
+    if (step + 1 >= QUIZ_LENGTH) {
+      const nextAlgo = algorithmCodeFromScores(nextScores);
+      const nextPrimary = resolvePrimaryCode(nextSelectedTargets, nextAlgo, nextScores);
+      setPhase(recommendationsIncludeF(nextPrimary, nextAlgo, nextSelectedTargets) ? "wtp" : "email");
+    } else {
+      setStep((s) => s + 1);
+    }
+  }
+
+  function toggleTarget(opt) {
+    if (opt.exclusive) {
+      setSelectedTargets(["unknown"]);
+      return;
+    }
+    setSelectedTargets((prev) => {
+      const withoutUnknown = prev.filter((c) => c !== "unknown");
+      if (withoutUnknown.includes(opt.code)) {
+        return withoutUnknown.filter((c) => c !== opt.code);
+      }
+      return [...withoutUnknown, opt.code];
+    });
+  }
+
+  function continueFromTargets() {
+    if (selectedTargets.length === 0) return;
+    const nextScores = applyTargetBoosts(scores, selectedTargets);
+    setScores(nextScores);
+    advanceQuiz(nextScores, selectedTargets);
+  }
+
   function answerQuiz(opt) {
     const q = questionForStep(step);
-    let nextFutureTarget = futureTarget;
     let nextScores = scores;
 
     if (q.type === "budget") {
       setWtpAnswers((prev) => ({ ...prev, budget: opt.points }));
     } else if (q.type === "pain") {
       setPain(opt);
-    } else if (q.type === "target") {
-      nextFutureTarget = opt.code;
-      setFutureTarget(opt.code);
-      if (COURSE_CODES.includes(opt.code)) {
-        nextScores = { ...scores, [opt.code]: (scores[opt.code] || 0) + 2 };
-        setScores(nextScores);
-      }
     } else if (opt.scores) {
       nextScores = { ...scores };
       for (const [code, pts] of Object.entries(opt.scores)) {
@@ -209,13 +278,7 @@ export default function Quiz() {
       setScores(nextScores);
     }
 
-    if (step + 1 >= QUIZ_LENGTH) {
-      const nextAlgo = algorithmCodeFromScores(nextScores);
-      const nextPrimary = resolvePrimaryCode(nextFutureTarget, nextAlgo);
-      setPhase(recommendationsIncludeF(nextPrimary, nextAlgo) ? "wtp" : "email");
-    } else {
-      setStep((s) => s + 1);
-    }
+    advanceQuiz(nextScores);
   }
 
   function answerWtp(opt) {
@@ -233,7 +296,7 @@ export default function Quiz() {
     setWtpStep(0);
     setScores({});
     setPain(null);
-    setFutureTarget(null);
+    setSelectedTargets([]);
     setWtpAnswers({});
     setEmail("");
     setError(null);
@@ -248,7 +311,10 @@ export default function Quiz() {
     if (!emailValid || submitting) return;
     setSubmitting(true);
     setError(null);
-    const chosen = futureTarget && futureTarget !== "unknown" ? futureTarget : primaryCode || algoCode;
+    const leadPreferred =
+      selectedTargets.includes("unknown")
+        ? "unknown"
+        : primaryCode || selectedTargets.find((c) => c !== "unknown") || algoCode;
     const wtpScore = computeWtpScore(wtpAnswers);
     const offeredPriceEur = wtpScoreToPriceEur(wtpScore);
     const hasOffer = fInRecommendations;
@@ -259,8 +325,8 @@ export default function Quiz() {
         body: JSON.stringify({
           email: email.trim(),
           name: null,
-          preferredCode: chosen,
-          preferredField: targetField(chosen),
+          preferredCode: leadPreferred,
+          preferredField: targetField(leadPreferred),
           recommendedCode: algoCode || primaryCode,
           recommendedField: algorithmCourse?.field || primaryCourse?.field,
           painKey: pain?.key || null,
@@ -290,6 +356,7 @@ export default function Quiz() {
             priceEur: offerData.priceEur,
             vipPriceEur,
             examCode: offerData.examCode,
+            liveMasterclasses: offerData.liveMasterclasses ?? false,
           });
           setWtpOffer({ ...offerData, vipPriceEur });
         }
@@ -309,7 +376,7 @@ export default function Quiz() {
   }
 
   /* ---------------- sähköposti (viimeisenä ennen tulosta) ---------------- */
-  if (phase === "email" && primaryCourse) {
+  if (phase === "email" && (primaryCourse || algorithmCourse)) {
     return (
       <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
         <span className="inline-flex items-center gap-2 rounded-pill bg-gold/15 px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/40">
@@ -407,8 +474,10 @@ export default function Quiz() {
   }
 
   /* ---------------- tulos ---------------- */
-  if (phase === "result" && primaryCourse) {
-    const primaryIsF = primaryCode === WTP_OFFER_EXAM;
+  if (phase === "result" && (primaryCourse || algorithmCourse)) {
+    const displayCourse = primaryCourse || algorithmCourse;
+    const displayCode = primaryCode || algoCode;
+    const primaryIsF = displayCode === WTP_OFFER_EXAM;
     const altIsF = showAltSuggestion && algorithmCourse?.code === WTP_OFFER_EXAM;
     const showAltCard =
       altIsF || (primaryIsF && showAltSuggestion && algorithmCourse?.code !== WTP_OFFER_EXAM);
@@ -426,9 +495,9 @@ export default function Quiz() {
         )}
 
         <h2 className="mt-6 font-heading text-2xl font-extrabold leading-tight text-navy md:text-3xl">
-          Ensisijainen hakukohteesi: <span className="text-navy">Valintakoe {primaryCourse.code} — {primaryCourse.field}</span>
+          Ensisijainen hakukohteesi: <span className="text-navy">Valintakoe {displayCourse.code} — {displayCourse.field}</span>
         </h2>
-        <p className="mt-3 text-[15px] leading-relaxed text-navy/80">{primaryCourse.recommend}</p>
+        <p className="mt-3 text-[15px] leading-relaxed text-navy/80">{displayCourse.recommend}</p>
 
         {showAltSuggestion && !showAltCard && (
           <div className="mt-5 rounded-xl border border-dashed border-line bg-white px-5 py-4">
@@ -441,24 +510,24 @@ export default function Quiz() {
 
         <div className="mt-6 rounded-xl border border-line bg-mist/60 p-5">
           <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/60">Soveltuvat koulutukset</h3>
-          <p className="mt-1.5 text-[15px] text-navy/80">{primaryCourse.koulutus}</p>
+          <p className="mt-1.5 text-[15px] text-navy/80">{displayCourse.koulutus}</p>
         </div>
 
         {/* Ensisijainen kurssi */}
         <div className="mt-8 rounded-2xl border-2 border-gold bg-white p-6 ring-2 ring-gold/30">
           <div className="flex items-center gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{primaryCourse.code}</span>
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{displayCourse.code}</span>
             <div>
-              <h3 className="font-heading text-lg font-bold leading-tight text-navy">{primaryCourse.title}</h3>
+              <h3 className="font-heading text-lg font-bold leading-tight text-navy">{displayCourse.title}</h3>
               <div className="mt-0.5 flex items-center gap-2 text-sm text-navy/70">
-                <Stars rating={primaryCourse.rating} />
-                <span className="font-semibold text-navy">{primaryCourse.rating}/5</span>
+                <Stars rating={displayCourse.rating} />
+                <span className="font-semibold text-navy">{displayCourse.rating}/5</span>
               </div>
             </div>
           </div>
 
           <ul className="mt-4 space-y-2 text-[15px] text-navy/80">
-            {primaryCourse.perks.map((p) => (
+            {displayCourse.perks.map((p) => (
               <li key={p} className="flex gap-2.5">
                 <svg viewBox="0 0 20 20" className="mt-0.5 h-5 w-5 shrink-0 fill-gold" aria-hidden><path d="M8 13.2l-3.1-3.1-1.4 1.4L8 16 17 7l-1.4-1.4z" /></svg>
                 <span>{p}</span>
@@ -467,10 +536,10 @@ export default function Quiz() {
           </ul>
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-navy/60">{primaryCourse.closing}</span>
+            <span className="text-xs font-semibold text-navy/60">{displayCourse.closing}</span>
           </div>
 
-          <CoursePricing course={primaryCourse} wtpOffer={wtpOffer} wtpForThisCourse={primaryIsF} />
+          <CoursePricing course={displayCourse} wtpOffer={wtpOffer} wtpForThisCourse={primaryIsF} />
         </div>
 
         {/* F vaihtoehtona kun ensisijainen on jokin muu */}
@@ -528,7 +597,52 @@ export default function Quiz() {
       <h2 className="mt-7 font-heading text-xl font-extrabold leading-snug text-navy md:text-2xl">
         {question.q}
       </h2>
+      {question.hint && (
+        <p className="mt-2 text-sm leading-relaxed text-navy/65">{question.hint}</p>
+      )}
 
+      {question.multi ? (
+        <>
+          <div className="mt-6 space-y-3">
+            {question.options.map((opt) => {
+              const selected = selectedTargets.includes(opt.code);
+              return (
+                <button
+                  key={opt.label}
+                  type="button"
+                  onClick={() => toggleTarget(opt)}
+                  className={`group flex w-full items-center justify-between gap-4 rounded-xl border px-5 py-4 text-left transition-colors ${
+                    selected ? "border-navy bg-mist" : "border-line bg-white hover:border-navy hover:bg-mist"
+                  }`}
+                >
+                  <span className="flex min-w-0 flex-1 items-start gap-3">
+                    <span
+                      className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded border ${
+                        selected ? "border-navy bg-navy text-gold" : "border-line bg-white text-transparent"
+                      }`}
+                      aria-hidden
+                    >
+                      <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="currentColor">
+                        <path d="M8 13.2l-3.1-3.1-1.4 1.4L8 16 17 7l-1.4-1.4z" />
+                      </svg>
+                    </span>
+                    <span className="block text-[15px] font-medium text-navy">{opt.label}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={continueFromTargets}
+            disabled={selectedTargets.length === 0}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Jatka
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+          </button>
+        </>
+      ) : (
       <div className="mt-6 space-y-3">
         {question.options.map((opt) => (
           <button
@@ -548,6 +662,7 @@ export default function Quiz() {
           </button>
         ))}
       </div>
+      )}
     </div>
   );
 }
