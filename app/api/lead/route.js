@@ -10,7 +10,8 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const ALLOWED_CODES = ["A", "B", "C", "E", "F"];
+const COURSE_CODES = ["A", "B", "C", "E", "F"]; // alat, joille on kurssi (suositus)
+const TARGET_CODES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "unknown"]; // hakukohde
 
 export async function POST(request) {
   let data;
@@ -28,11 +29,11 @@ export async function POST(request) {
   const lead = {
     email,
     name: typeof data?.name === "string" ? data.name.trim() || null : null,
-    // ensisijainen hakukohde -> liidiryhmä
-    preferredCode: ALLOWED_CODES.includes(data?.preferredCode) ? data.preferredCode : null,
+    // ensisijainen hakukohde -> liidiryhmä (mikä tahansa 9 koetta tai "unknown")
+    preferredCode: TARGET_CODES.includes(data?.preferredCode) ? data.preferredCode : null,
     preferredField: typeof data?.preferredField === "string" ? data.preferredField : null,
-    // testin suositus (voi poiketa valitusta)
-    recommendedCode: ALLOWED_CODES.includes(data?.recommendedCode) ? data.recommendedCode : null,
+    // testin suositus (aina jokin kurssikoodi, voi poiketa valitusta)
+    recommendedCode: COURSE_CODES.includes(data?.recommendedCode) ? data.recommendedCode : null,
     recommendedField: typeof data?.recommendedField === "string" ? data.recommendedField : null,
     painKey: typeof data?.painKey === "string" ? data.painKey : null,
     scores: data?.scores && typeof data.scores === "object" ? data.scores : null,
@@ -53,7 +54,9 @@ export async function POST(request) {
         ? `Valintakoe ${lead.recommendedCode} — ${lead.recommendedField}`
         : null;
     const preferredExam =
-      lead.preferredCode && lead.preferredField
+      lead.preferredCode === "unknown"
+        ? "En tiedä vielä"
+        : lead.preferredCode && lead.preferredField
         ? `Valintakoe ${lead.preferredCode} — ${lead.preferredField}`
         : null;
     try {
