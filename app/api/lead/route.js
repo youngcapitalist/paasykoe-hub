@@ -26,6 +26,15 @@ export async function POST(request) {
     return Response.json({ error: "invalid_email" }, { status: 400 });
   }
 
+  const wtpScore =
+    typeof data?.wtpScore === "number" && data.wtpScore >= 0 && data.wtpScore <= 1000
+      ? Math.round(data.wtpScore)
+      : null;
+  const offeredPriceEur =
+    typeof data?.offeredPriceEur === "number" && data.offeredPriceEur >= 99 && data.offeredPriceEur <= 999
+      ? Math.round(data.offeredPriceEur)
+      : null;
+
   const lead = {
     email,
     name: typeof data?.name === "string" ? data.name.trim() || null : null,
@@ -37,6 +46,9 @@ export async function POST(request) {
     recommendedField: typeof data?.recommendedField === "string" ? data.recommendedField : null,
     painKey: typeof data?.painKey === "string" ? data.painKey : null,
     scores: data?.scores && typeof data.scores === "object" ? data.scores : null,
+    wtpScore,
+    offeredPriceEur,
+    offerExam: data?.offerExam === "F" ? "F" : null,
     source: "tasotesti",
     receivedAt: new Date().toISOString(),
   };
@@ -79,6 +91,9 @@ export async function POST(request) {
           recommended_field: lead.recommendedField,
           pain_key: lead.painKey,
           scores: lead.scores,
+          wtp_score: lead.wtpScore,
+          offered_price_eur: lead.offeredPriceEur,
+          offer_exam: lead.offerExam,
           source: lead.source,
         }),
       });

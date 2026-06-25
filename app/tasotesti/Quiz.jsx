@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { COURSES, getCourse, EXAM_TARGETS } from "../courses";
+import { WTP_QUESTIONS, computeWtpScore, wtpScoreToPriceEur, formatPriceEur } from "../../lib/wtp";
 
 const COURSE_CODES = ["A", "B", "C", "E", "F"]; // alat, joille on kurssi
 const targetField = (code) =>
@@ -75,7 +76,8 @@ const QUESTIONS = [
   },
 ];
 
-const TOTAL = QUESTIONS.length;
+const TOTAL_INTEREST = QUESTIONS.length;
+const TOTAL = TOTAL_INTEREST + WTP_QUESTIONS.length;
 
 function Stars({ rating }) {
   return (
@@ -94,17 +96,20 @@ export default function Quiz() {
   const [scores, setScores] = useState({});
   const [pain, setPain] = useState(null);
   const [futureTarget, setFutureTarget] = useState(null); // valittu hakukohde (A–I tai "unknown")
+  const [wtpAnswers, setWtpAnswers] = useState({});
 
-  // liidigate
+  // liidigate + WTP-tarjous (F)
   const [submitted, setSubmitted] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [preferredCode, setPreferredCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [wtpOffer, setWtpOffer] = useState(null); // { token, priceEur, checkoutUrl, wtpScore }
 
   const isResult = step >= TOTAL;
-  const question = QUESTIONS[step];
+  const isWtpStep = step >= TOTAL_INTEREST && step < TOTAL;
+  const question = isWtpStep ? WTP_QUESTIONS[step - TOTAL_INTEREST] : QUESTIONS[step];
 
   const result = useMemo(() => {
     if (!isResult) return null;
@@ -118,11 +123,12 @@ export default function Quiz() {
   }, [isResult, scores]);
 
   function answer(opt) {
-    if (question.type === "pain") {
+    if (isWtpStep) {
+      setWtpAnswers((prev) => ({ ...prev, [question.id]: opt.points }));
+    } else if (question.type === "pain") {
       setPain(opt);
     } else if (question.type === "target") {
       setFutureTarget(opt.code);
-      // jos valittu hakukohde vastaa kurssia, painota suositusta sen mukaan
       if (COURSE_CODES.includes(opt.code)) {
         setScores((prev) => ({ ...prev, [opt.code]: (prev[opt.code] || 0) + 2 }));
       }
@@ -141,11 +147,13 @@ export default function Quiz() {
     setScores({});
     setPain(null);
     setFutureTarget(null);
+    setWtpAnswers({});
     setSubmitted(false);
     setEmail("");
     setName("");
     setPreferredCode("");
     setError(null);
+    setWtpOffer(null);
   }
 
   const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -156,6 +164,9 @@ export default function Quiz() {
     setSubmitting(true);
     setError(null);
     const chosen = preferredCode || futureTarget || result.code;
+    const wtpScore = computeWtpScore(wtpAnswers, pain?.key);
+    const offeredPriceEur = wtpScoreToPriceEur(wtpScore);
+    const isF = result.code === "F";
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
@@ -169,9 +180,29 @@ export default function Quiz() {
           recommendedField: result.field,
           painKey: pain?.key || null,
           scores,
+          wtpScore,
+          offeredPriceEur: isF ? offeredPriceEur : null,
+          offerExam: isF ? "F" : null,
         }),
       });
       if (!res.ok) throw new Error("request_failed");
+
+      if (isF) {
+        const offerRes = await fetch("/api/offer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: email.trim(),
+            wtpScore,
+            examCode: "F",
+          }),
+        });
+        if (offerRes.ok) {
+          const offerData = await offerRes.json();
+          setWtpOffer(offerData);
+        }
+      }
+
       setSubmitted(true);
     } catch (err) {
       setError("Lähetys ei onnistunut. Tarkista yhteys ja yritä uudelleen.");
@@ -281,19 +312,43 @@ export default function Quiz() {
             <span className="text-xs font-semibold text-navy/60">{result.closing}</span>
           </div>
 
-          <div className="mt-5 flex items-baseline gap-2 border-t border-line pt-5">
-            <span className="font-heading text-2xl font-extrabold text-navy">{result.price}</span>
-            <span className="text-sm font-semibold text-navy/40 line-through">{result.oldPrice}</span>
-            <span className="ml-auto text-sm font-semibold text-navy/60">VIP {result.vipPrice} · vain {result.seatsLeft} paikkaa</span>
-          </div>
+          {result.code === "F" && wtpOffer?.priceEur ? (
+            <div className="mt-5 border-t border-line pt-5">
+              <span className="inline-flex items-center gap-2 rounded-pill bg-gold/20 px-3 py-1 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/50">
+                Sinulle räätälöity hinta
+              </span>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="font-heading text-3xl font-extrabold text-navy">{formatPriceEur(wtpOffer.priceEur)}</span>
+                <span className="text-sm font-semibold text-navy/50">PRO-paketti · voimassa 7 pv</span>
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-navy/70">
+                Hinta perustuu vastauksiisi maksuhalukkuudesta (99–999 €). Sama täysi kurssi — juuri sinulle sopiva hinta.
+              </p>
+              <a
+                href={wtpOffer.checkoutUrl}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
+              >
+                Varaa paikkasi {formatPriceEur(wtpOffer.priceEur)}
+                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </a>
+            </div>
+          ) : (
+            <div className="mt-5 flex items-baseline gap-2 border-t border-line pt-5">
+              <span className="font-heading text-2xl font-extrabold text-navy">{result.price}</span>
+              <span className="text-sm font-semibold text-navy/40 line-through">{result.oldPrice}</span>
+              <span className="ml-auto text-sm font-semibold text-navy/60">VIP {result.vipPrice} · vain {result.seatsLeft} paikkaa</span>
+            </div>
+          )}
 
-          <a
-            href={result.href}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
-          >
-            Varaa paikkasi {result.title.split(" ")[0].toLowerCase()}-kurssille
-            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-          </a>
+          {!(result.code === "F" && wtpOffer?.checkoutUrl) && (
+            <a
+              href={result.href}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
+            >
+              Varaa paikkasi {result.title.split(" ")[0].toLowerCase()}-kurssille
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+          )}
         </div>
 
         <button onClick={restart} className="mt-6 text-sm font-semibold text-navy/60 underline underline-offset-4 hover:text-navy">
@@ -318,6 +373,10 @@ export default function Quiz() {
       <h2 className="mt-7 font-heading text-xl font-extrabold leading-snug text-navy md:text-2xl">
         {question.q}
       </h2>
+
+      {isWtpStep && (
+        <p className="mt-2 text-sm text-navy/60">Vastauksesi määrittää sinulle sopivan hintatarjouksen (99–999 €).</p>
+      )}
 
       <div className="mt-6 space-y-3">
         {question.options.map((opt) => (
