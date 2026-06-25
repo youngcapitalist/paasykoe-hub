@@ -1,10 +1,15 @@
 import { createOfferToken } from "../../../lib/offer-token";
-import { wtpScoreToPriceEur, WTP_MAX_EUR, CHECKOUT_MIN_EUR } from "../../../lib/wtp";
+import {
+  wtpScoreToPriceEur,
+  wtpScoreToVipPriceEur,
+  WTP_MAX_EUR,
+  CHECKOUT_MIN_EUR,
+  qualifiesForWtpOffer,
+} from "../../../lib/wtp";
+import { getCourse } from "../../../app/courses";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const F_COURSE_URL = process.env.F_COURSE_URL || "https://valintakoefpro.com";
 
 export async function POST(request) {
   let data;
@@ -20,8 +25,13 @@ export async function POST(request) {
   }
 
   const examCode = typeof data?.examCode === "string" ? data.examCode.toUpperCase() : "";
-  if (examCode !== "F") {
-    return Response.json({ error: "wtp_only_f" }, { status: 400 });
+  if (!qualifiesForWtpOffer(examCode)) {
+    return Response.json({ error: "invalid_exam" }, { status: 400 });
+  }
+
+  const course = getCourse(examCode);
+  if (!course?.href) {
+    return Response.json({ error: "no_course_url" }, { status: 400 });
   }
 
   const wtpScore = Number(data?.wtpScore);
@@ -36,19 +46,25 @@ export async function POST(request) {
   }
 
   const priceEur = wtpScoreToPriceEur(wtpScore);
+  const vipPriceEur = wtpScoreToVipPriceEur(priceEur, wtpScore);
   const amountCents = priceEur * 100;
+  const vipAmountCents = vipPriceEur * 100;
 
   const token = createOfferToken(
-    { exam: "F", amountCents, priceEur, wtpScore, email },
+    { exam: examCode, amountCents, priceEur, vipAmountCents, vipPriceEur, wtpScore, email },
     secret
   );
+
+  const base = course.href.replace(/\/$/, "");
 
   return Response.json({
     ok: true,
     token,
+    examCode,
     priceEur,
+    vipPriceEur,
     wtpScore,
     priceRange: { min: CHECKOUT_MIN_EUR, max: WTP_MAX_EUR },
-    checkoutUrl: `${F_COURSE_URL}/?offer=${encodeURIComponent(token)}#pricing`,
+    checkoutUrl: `${base}/?offer=${encodeURIComponent(token)}#pricing`,
   });
 }
