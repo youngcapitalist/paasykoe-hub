@@ -6,6 +6,7 @@ import {
   WTP_QUESTIONS,
   computeWtpScore,
   wtpScoreToPriceEur,
+  wtpScoreToVipPriceEur,
   formatPriceEur,
   resolvePrimaryCode,
   recommendationsIncludeF,
@@ -115,7 +116,7 @@ function CoursePricing({ course, wtpOffer, wtpForThisCourse }) {
           </span>
           <div className="mt-3 flex flex-wrap items-baseline gap-x-4 gap-y-1">
             <span className="font-heading text-2xl font-extrabold text-navy">PRO {formatPriceEur(wtpOffer.priceEur)}</span>
-            <span className="font-heading text-lg font-bold text-navy/70">VIP {formatPriceEur(wtpOffer.vipPriceEur)}</span>
+            <span className="font-heading text-lg font-bold text-navy/70">VIP {formatPriceEur(wtpOffer.vipPriceEur ?? wtpScoreToVipPriceEur(wtpOffer.priceEur))}</span>
           </div>
         </div>
         <a
@@ -263,13 +264,14 @@ export default function Quiz() {
         });
         if (offerRes.ok) {
           const offerData = await offerRes.json();
+          const vipPriceEur = offerData.vipPriceEur ?? wtpScoreToVipPriceEur(offerData.priceEur);
           persistHubOffer({
             token: offerData.token,
             priceEur: offerData.priceEur,
-            vipPriceEur: offerData.vipPriceEur,
+            vipPriceEur,
             examCode: offerData.examCode,
           });
-          setWtpOffer(offerData);
+          setWtpOffer({ ...offerData, vipPriceEur });
         }
       }
 

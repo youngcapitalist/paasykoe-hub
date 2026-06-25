@@ -46,7 +46,7 @@ export async function POST(request) {
   }
 
   const priceEur = wtpScoreToPriceEur(wtpScore);
-  const vipPriceEur = wtpScoreToVipPriceEur(priceEur, wtpScore);
+  const vipPriceEur = wtpScoreToVipPriceEur(priceEur);
   const amountCents = priceEur * 100;
   const vipAmountCents = vipPriceEur * 100;
 
