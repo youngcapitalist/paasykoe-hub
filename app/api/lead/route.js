@@ -31,7 +31,7 @@ export async function POST(request) {
       ? Math.round(data.wtpScore)
       : null;
   const offeredPriceEur =
-    typeof data?.offeredPriceEur === "number" && data.offeredPriceEur >= 99 && data.offeredPriceEur <= 999
+    typeof data?.offeredPriceEur === "number" && data.offeredPriceEur >= 29 && data.offeredPriceEur <= 1000
       ? Math.round(data.offeredPriceEur)
       : null;
 

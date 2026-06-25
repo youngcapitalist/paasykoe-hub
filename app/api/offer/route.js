@@ -1,5 +1,5 @@
 import { createOfferToken } from "../../../lib/offer-token";
-import { wtpScoreToPriceEur, WTP_MIN_EUR, WTP_MAX_EUR } from "../../../lib/wtp";
+import { wtpScoreToPriceEur, WTP_MAX_EUR, CHECKOUT_MIN_EUR } from "../../../lib/wtp";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,7 +48,7 @@ export async function POST(request) {
     token,
     priceEur,
     wtpScore,
-    priceRange: { min: WTP_MIN_EUR, max: WTP_MAX_EUR },
+    priceRange: { min: CHECKOUT_MIN_EUR, max: WTP_MAX_EUR },
     checkoutUrl: `${F_COURSE_URL}/?offer=${encodeURIComponent(token)}#pricing`,
   });
 }

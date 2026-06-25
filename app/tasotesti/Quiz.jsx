@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { COURSES, getCourse, EXAM_TARGETS } from "../courses";
-import { WTP_QUESTIONS, computeWtpScore, wtpScoreToPriceEur, formatPriceEur } from "../../lib/wtp";
+import { WTP_QUESTIONS, computeWtpScore, wtpScoreToPriceEur, formatPriceEur, qualifiesForFOffer } from "../../lib/wtp";
+import { persistHubOffer } from "../../lib/wtp-persist";
 
 const COURSE_CODES = ["A", "B", "C", "E", "F"]; // alat, joille on kurssi
 const targetField = (code) =>
@@ -166,7 +167,7 @@ export default function Quiz() {
     const chosen = preferredCode || futureTarget || result.code;
     const wtpScore = computeWtpScore(wtpAnswers, pain?.key);
     const offeredPriceEur = wtpScoreToPriceEur(wtpScore);
-    const isF = result.code === "F";
+    const isF = qualifiesForFOffer(result.code, futureTarget, preferredCode || chosen);
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
@@ -199,6 +200,7 @@ export default function Quiz() {
         });
         if (offerRes.ok) {
           const offerData = await offerRes.json();
+          persistHubOffer(offerData.token, offerData.priceEur);
           setWtpOffer(offerData);
         }
       }
@@ -312,17 +314,17 @@ export default function Quiz() {
             <span className="text-xs font-semibold text-navy/60">{result.closing}</span>
           </div>
 
-          {result.code === "F" && wtpOffer?.priceEur ? (
+          {wtpOffer?.priceEur ? (
             <div className="mt-5 border-t border-line pt-5">
               <span className="inline-flex items-center gap-2 rounded-pill bg-gold/20 px-3 py-1 font-heading text-xs font-bold uppercase tracking-wider text-navy ring-1 ring-gold/50">
-                Sinulle räätälöity hinta
+                Kurssitarjous
               </span>
               <div className="mt-3 flex items-baseline gap-2">
                 <span className="font-heading text-3xl font-extrabold text-navy">{formatPriceEur(wtpOffer.priceEur)}</span>
-                <span className="text-sm font-semibold text-navy/50">PRO-paketti · voimassa 7 pv</span>
+                <span className="text-sm font-semibold text-navy/50">PRO-paketti</span>
               </div>
               <p className="mt-2 text-sm leading-relaxed text-navy/70">
-                Hinta perustuu vastauksiisi maksuhalukkuudesta (99–999 €). Sama täysi kurssi — juuri sinulle sopiva hinta.
+                Valintakoe F -valmennuskurssi — täysi pääsy kevään 2027 kokeeseen asti.
               </p>
               <a
                 href={wtpOffer.checkoutUrl}
@@ -340,7 +342,7 @@ export default function Quiz() {
             </div>
           )}
 
-          {!(result.code === "F" && wtpOffer?.checkoutUrl) && (
+          {!(wtpOffer?.checkoutUrl) && (
             <a
               href={result.href}
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light"
@@ -373,10 +375,6 @@ export default function Quiz() {
       <h2 className="mt-7 font-heading text-xl font-extrabold leading-snug text-navy md:text-2xl">
         {question.q}
       </h2>
-
-      {isWtpStep && (
-        <p className="mt-2 text-sm text-navy/60">Vastauksesi määrittää sinulle sopivan hintatarjouksen (99–999 €).</p>
-      )}
 
       <div className="mt-6 space-y-3">
         {question.options.map((opt) => (
