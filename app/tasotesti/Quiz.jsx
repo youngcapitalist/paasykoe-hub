@@ -12,8 +12,8 @@ import {
   wtpPriceIncludesConsultation,
   WTP_CALENDLY_URL,
   resolvePrimaryCode,
-  recommendationsIncludeF,
-  WTP_OFFER_EXAM,
+  recommendationsIncludeWtpOffer,
+  qualifiesForWtpOffer,
 } from "../../lib/wtp";
 import { persistHubOffer, clearHubOffer } from "../../lib/wtp-persist";
 
@@ -136,7 +136,7 @@ function Stars({ rating }) {
 }
 
 function CoursePricing({ course, wtpOffer, wtpForThisCourse }) {
-  if (wtpForThisCourse && wtpOffer?.priceEur) {
+  if (wtpForThisCourse && wtpOffer?.priceEur && wtpOffer.examCode === course.code) {
     return (
       <div className="mt-5 border-t border-line pt-5 space-y-4">
         <div>
@@ -158,14 +158,18 @@ function CoursePricing({ course, wtpOffer, wtpForThisCourse }) {
           Siirry kurssisivulle
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </a>
-        {wtpPriceIncludesConsultation(wtpOffer.priceEur) && (
+        {wtpPriceIncludesConsultation(wtpOffer.priceEur, wtpOffer.examCode) && (
           <div className="rounded-xl border border-dashed border-gold/50 bg-gold/5 px-5 py-4">
             <p className="font-heading text-sm font-bold text-navy">Haluatko kuulla lisää ennen päätöstä?</p>
             <p className="mt-2 text-sm leading-relaxed text-navy/75">
-              Voit ostaa suoraan tai varata ilmaisen 30 min kartoituspuhelun — käymme läpi paketin, masterclassit ja miten aloitat.
+              Voit ostaa suoraan tai varata ilmaisen 15 min puhelun — käymme läpi paketin, masterclassit ja miten aloitat.
             </p>
             <p className="mt-2 text-xs leading-relaxed text-navy/60">
-              Puhelun pitää Valintakoe F -opiskelija, joka saavutti valintakokeessa sellaisen pistemäärän, että olisi päässyt sisään kaikkiin Valintakoe F -yliopistoihin, ja toimii tutorina Valintakoe-sovelluksessamme.
+              {wtpOffer.examCode === "F" ? (
+                <>Puhelun pitää Valintakoe F -opiskelija, joka saavutti valintakokeessa sellaisen pistemäärän, että olisi päässyt sisään kaikkiin Valintakoe F -yliopistoihin, ja toimii tutorina Valintakoe-sovelluksessamme.</>
+              ) : (
+                <>Puhelun pitää Valintakoe {wtpOffer.examCode} -valmennuksen asiantuntija — autamme valitsemaan sinulle sopivan paketin ja alun valmistautumiseen.</>
+              )}
             </p>
             <a
               href={WTP_CALENDLY_URL}
@@ -173,7 +177,7 @@ function CoursePricing({ course, wtpOffer, wtpForThisCourse }) {
               rel="noopener noreferrer"
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill border-2 border-navy bg-white px-5 py-3 font-heading text-sm font-bold text-navy transition-colors hover:bg-mist"
             >
-              Varaa kartoituspuhelu
+              Varaa ilmainen 15 min puhelu
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
             </a>
           </div>
@@ -224,10 +228,10 @@ export default function Quiz() {
     [selectedTargets, algoCode, scores]
   );
   const primaryCourse = primaryCode ? getCourse(primaryCode) : null;
-  const fInRecommendations = recommendationsIncludeF(primaryCode, algoCode, selectedTargets);
+  const wtpInRecommendations = recommendationsIncludeWtpOffer(primaryCode, algoCode, selectedTargets);
+  const offerExamCode = qualifiesForWtpOffer(primaryCode) ? primaryCode : null;
   const showAltSuggestion =
     algorithmCourse && primaryCourse && algorithmCourse.code !== primaryCourse.code;
-  const fCourse = getCourse(WTP_OFFER_EXAM);
 
   const question = phase === "wtp" ? WTP_EXTRA_QUESTIONS[wtpStep] : questionForStep(step);
 
@@ -235,7 +239,7 @@ export default function Quiz() {
     if (step + 1 >= QUIZ_LENGTH) {
       const nextAlgo = algorithmCodeFromScores(nextScores);
       const nextPrimary = resolvePrimaryCode(nextSelectedTargets, nextAlgo, nextScores);
-      setPhase(recommendationsIncludeF(nextPrimary, nextAlgo, nextSelectedTargets) ? "wtp" : "email");
+      setPhase(recommendationsIncludeWtpOffer(nextPrimary, nextAlgo, nextSelectedTargets) ? "wtp" : "email");
     } else {
       setStep((s) => s + 1);
     }
@@ -316,8 +320,8 @@ export default function Quiz() {
         ? "unknown"
         : primaryCode || selectedTargets.find((c) => c !== "unknown") || algoCode;
     const wtpScore = computeWtpScore(wtpAnswers);
-    const offeredPriceEur = wtpScoreToPriceEur(wtpScore);
-    const hasOffer = fInRecommendations;
+    const hasOffer = Boolean(offerExamCode);
+    const offeredPriceEur = hasOffer ? wtpScoreToPriceEur(wtpScore, offerExamCode) : null;
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
@@ -333,7 +337,7 @@ export default function Quiz() {
           scores,
           wtpScore,
           offeredPriceEur: hasOffer ? offeredPriceEur : null,
-          offerExam: hasOffer ? WTP_OFFER_EXAM : null,
+          offerExam: hasOffer ? offerExamCode : null,
         }),
       });
       if (!res.ok) throw new Error("request_failed");
@@ -345,7 +349,7 @@ export default function Quiz() {
           body: JSON.stringify({
             email: email.trim(),
             wtpScore,
-            examCode: WTP_OFFER_EXAM,
+            examCode: offerExamCode,
           }),
         });
         if (offerRes.ok) {
@@ -387,7 +391,7 @@ export default function Quiz() {
         </h2>
         <p className="mt-3 text-[15px] leading-relaxed text-navy/80">
           Kirjoita sähköpostisi, niin näet tuloksesi heti
-          {fInRecommendations ? " — ja saat henkilökohtaisen kurssitarjouksen" : ""}
+          {wtpInRecommendations ? " — ja saat henkilökohtaisen kurssitarjouksen" : ""}
           {" "}myös sähköpostiisi.
         </p>
 
@@ -414,7 +418,7 @@ export default function Quiz() {
             disabled={!emailValid || submitting}
             className="flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-5 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {submitting ? "Lähetetään…" : fInRecommendations ? "Jatka" : "Näytä tulokseni"}
+            {submitting ? "Lähetetään…" : wtpInRecommendations ? "Jatka" : "Näytä tulokseni"}
             {!submitting && (
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             )}
@@ -477,10 +481,11 @@ export default function Quiz() {
   if (phase === "result" && (primaryCourse || algorithmCourse)) {
     const displayCourse = primaryCourse || algorithmCourse;
     const displayCode = primaryCode || algoCode;
-    const primaryIsF = displayCode === WTP_OFFER_EXAM;
-    const altIsF = showAltSuggestion && algorithmCourse?.code === WTP_OFFER_EXAM;
-    const showAltCard =
-      altIsF || (primaryIsF && showAltSuggestion && algorithmCourse?.code !== WTP_OFFER_EXAM);
+    const offerCourse = wtpOffer?.examCode ? getCourse(wtpOffer.examCode) : null;
+    const primaryHasOffer = wtpOffer?.examCode === displayCode;
+    const altHasOffer = showAltSuggestion && wtpOffer?.examCode === algorithmCourse?.code;
+    const showAltOfferCard =
+      altHasOffer || (primaryHasOffer && showAltSuggestion && algorithmCourse?.code !== wtpOffer?.examCode);
 
     return (
       <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
@@ -499,7 +504,7 @@ export default function Quiz() {
         </h2>
         <p className="mt-3 text-[15px] leading-relaxed text-navy/80">{displayCourse.recommend}</p>
 
-        {showAltSuggestion && !showAltCard && (
+        {showAltSuggestion && !showAltOfferCard && (
           <div className="mt-5 rounded-xl border border-dashed border-line bg-white px-5 py-4">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Testin perusteella myös sopisi</h3>
             <p className="mt-1.5 text-[15px] text-navy/75">
@@ -539,26 +544,28 @@ export default function Quiz() {
             <span className="text-xs font-semibold text-navy/60">{displayCourse.closing}</span>
           </div>
 
-          <CoursePricing course={displayCourse} wtpOffer={wtpOffer} wtpForThisCourse={primaryIsF} />
+          <CoursePricing
+            course={displayCourse}
+            wtpOffer={wtpOffer}
+            wtpForThisCourse={primaryHasOffer}
+          />
         </div>
 
-        {/* F vaihtoehtona kun ensisijainen on jokin muu */}
-        {altIsF && fCourse && (
+        {altHasOffer && offerCourse && (
           <div className="mt-6 rounded-2xl border-2 border-gold/60 bg-white p-6 ring-1 ring-gold/20">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Myös sinulle sopiva vaihtoehto</h3>
             <div className="mt-4 flex items-center gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{fCourse.code}</span>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{offerCourse.code}</span>
               <div>
-                <h4 className="font-heading text-lg font-bold leading-tight text-navy">{fCourse.title}</h4>
-                <p className="mt-0.5 text-sm text-navy/70">{fCourse.field}</p>
+                <h4 className="font-heading text-lg font-bold leading-tight text-navy">{offerCourse.title}</h4>
+                <p className="mt-0.5 text-sm text-navy/70">{offerCourse.field}</p>
               </div>
             </div>
-            <CoursePricing course={fCourse} wtpOffer={wtpOffer} wtpForThisCourse />
+            <CoursePricing course={offerCourse} wtpOffer={wtpOffer} wtpForThisCourse />
           </div>
         )}
 
-        {/* Muu kurssi vaihtoehtona kun ensisijainen on F */}
-        {primaryIsF && showAltSuggestion && algorithmCourse && algorithmCourse.code !== WTP_OFFER_EXAM && (
+        {primaryHasOffer && showAltSuggestion && algorithmCourse && algorithmCourse.code !== wtpOffer?.examCode && (
           <div className="mt-6 rounded-2xl border border-line bg-white p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Myös sinulle sopiva vaihtoehto</h3>
             <div className="mt-4 flex items-center gap-3">

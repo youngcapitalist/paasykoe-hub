@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { COURSES } from "../courses";
 import { loadHubOffer, HUB_WTP_OFFER_EVENT } from "../../lib/wtp-persist";
-import { WTP_OFFER_EXAM } from "../../lib/wtp";
+import { qualifiesForWtpOffer } from "../../lib/wtp";
 
 function Stars({ rating }) {
   return (
@@ -18,19 +18,22 @@ function Stars({ rating }) {
 }
 
 export default function CoursesGrid() {
-  const [hideFStandard, setHideFStandard] = useState(false);
+  const [hiddenOfferCode, setHiddenOfferCode] = useState(null);
 
   useEffect(() => {
     const sync = () => {
       const offer = loadHubOffer();
-      setHideFStandard(offer?.examCode === WTP_OFFER_EXAM);
+      const code = offer?.examCode;
+      setHiddenOfferCode(code && qualifiesForWtpOffer(code) ? code : null);
     };
     sync();
     window.addEventListener(HUB_WTP_OFFER_EVENT, sync);
     return () => window.removeEventListener(HUB_WTP_OFFER_EVENT, sync);
   }, []);
 
-  const courses = hideFStandard ? COURSES.filter((c) => c.code !== WTP_OFFER_EXAM) : COURSES;
+  const courses = hiddenOfferCode
+    ? COURSES.filter((c) => c.code !== hiddenOfferCode)
+    : COURSES;
 
   return (
     <div id="valmennusmateriaalit" data-slot="valmennusmateriaalit" className="mt-14">
@@ -61,9 +64,9 @@ export default function CoursesGrid() {
         ))}
       </dl>
 
-      {hideFStandard && (
+      {hiddenOfferCode && (
         <div className="mt-8 rounded-2xl border border-gold/40 bg-gold/10 px-6 py-5 text-[15px] text-navy/85">
-          <strong className="font-semibold text-navy">Kauppiksen (F) henkilökohtainen tarjouksesi</strong> näkyy
+          <strong className="font-semibold text-navy">Koe {hiddenOfferCode} -henkilökohtainen tarjouksesi</strong> näkyy
           tasotestin tuloksessa yllä — ei kiinteää listahintaa.
         </div>
       )}

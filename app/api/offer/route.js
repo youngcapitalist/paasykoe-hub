@@ -4,7 +4,7 @@ import {
   wtpScoreToVipPriceEur,
   wtpScoreIncludesLiveMasterclasses,
   WTP_MAX_EUR,
-  WTP_OFFER_MIN_EUR,
+  wtpOfferMinEur,
   qualifiesForWtpOffer,
 } from "../../../lib/wtp";
 import { getCourse } from "../../../app/courses";
@@ -46,7 +46,7 @@ export async function POST(request) {
     return Response.json({ error: "server_misconfigured" }, { status: 500 });
   }
 
-  const priceEur = wtpScoreToPriceEur(wtpScore);
+  const priceEur = wtpScoreToPriceEur(wtpScore, examCode);
   const vipPriceEur = wtpScoreToVipPriceEur(priceEur);
   const liveMasterclasses = wtpScoreIncludesLiveMasterclasses(wtpScore);
   const amountCents = priceEur * 100;
@@ -76,7 +76,7 @@ export async function POST(request) {
     vipPriceEur,
     wtpScore,
     liveMasterclasses,
-    priceRange: { min: WTP_OFFER_MIN_EUR, max: WTP_MAX_EUR },
+    priceRange: { min: wtpOfferMinEur(examCode), max: WTP_MAX_EUR },
     checkoutUrl: `${base}/?offer=${encodeURIComponent(token)}#pricing`,
   });
 }

@@ -48,7 +48,7 @@ export async function POST(request) {
     scores: data?.scores && typeof data.scores === "object" ? data.scores : null,
     wtpScore,
     offeredPriceEur,
-    offerExam: data?.offerExam === "F" ? "F" : null,
+    offerExam: COURSE_CODES.includes(data?.offerExam) ? data.offerExam : null,
     source: "tasotesti",
     receivedAt: new Date().toISOString(),
   };
