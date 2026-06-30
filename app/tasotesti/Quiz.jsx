@@ -11,6 +11,7 @@ import {
   formatPriceEur,
   wtpPriceIncludesConsultation,
   WTP_CALENDLY_URL,
+  wtpConsultationEmail,
   resolvePrimaryCode,
   recommendationsIncludeWtpOffer,
   qualifiesForWtpOffer,
@@ -180,6 +181,16 @@ function CoursePricing({ course, wtpOffer, wtpForThisCourse }) {
               Varaa ilmainen 15 min puhelu
               <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
             </a>
+            <p className="mt-3 text-xs text-navy/50">
+              Eikö kalenterista löydy sopivaa aikaa?{" "}
+              <a
+                href={`mailto:${wtpConsultationEmail(wtpOffer.examCode)}?subject=${encodeURIComponent("Kartoituspuhelu")}`}
+                className="underline underline-offset-2 hover:text-navy/70"
+              >
+                Sovi sähköpostilla
+              </a>{" "}
+              ({wtpConsultationEmail(wtpOffer.examCode)})
+            </p>
           </div>
         )}
       </div>
