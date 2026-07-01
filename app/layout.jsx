@@ -20,6 +20,10 @@ export const metadata = {
   title: "Pääsykoe.fi — yliopistojen valintakokeet yhdessä paikassa",
   description:
     "Kaikki Suomen yliopistojen kansalliset valintakokeet (pääsykokeet) yhdessä paikassa. Todistusvalinta, valintakokeet ja hakeminen.",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/apple-icon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({ children }) {
