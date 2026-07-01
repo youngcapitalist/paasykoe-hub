@@ -3,42 +3,8 @@
 
 import CoursesGrid from "./components/CoursesGrid";
 import Quiz from "./tasotesti/Quiz";
-
-/* ---------------- ikonit / merkit ---------------- */
-function Logo({ className = "h-11 w-11" }) {
-  return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden>
-      <path d="M6 18V8a2 2 0 0 1 2-2h10" fill="none" stroke="white" strokeWidth="3" strokeLinecap="square" />
-      <path d="M42 30v10a2 2 0 0 1-2 2H30" fill="none" stroke="white" strokeWidth="3" strokeLinecap="square" />
-      <circle cx="24" cy="26" r="11" fill="#6ee7b7" />
-    </svg>
-  );
-}
-function SearchIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
-    </svg>
-  );
-}
-const FlagFI = () => (<svg viewBox="0 0 18 12" className="h-3 w-[18px] rounded-[2px] ring-1 ring-white/20"><rect width="18" height="12" fill="#fff" /><rect x="5" width="3" height="12" fill="#0A2540" /><rect y="4.5" width="18" height="3" fill="#0A2540" /></svg>);
-const FlagSE = () => (<svg viewBox="0 0 18 12" className="h-3 w-[18px] rounded-[2px] ring-1 ring-white/20"><rect width="18" height="12" fill="#0A2540" /><rect x="5" width="3" height="12" fill="#FFC600" /><rect y="4.5" width="18" height="3" fill="#FFC600" /></svg>);
-const FlagEN = () => (<svg viewBox="0 0 18 12" className="h-3 w-[18px] rounded-[2px] ring-1 ring-white/20"><rect width="18" height="12" fill="#0A2540" /><path d="M0 0l18 12M18 0L0 12" stroke="#fff" strokeWidth="2" /><path d="M9 0v12M0 6h18" stroke="#fff" strokeWidth="3" /><path d="M9 0v12M0 6h18" stroke="#C8102E" strokeWidth="1.5" /></svg>);
-
-const NAV = ["Etusivu", "Koulutukset & hakeminen", "Todistusvalinta", "Valintakokeet", "Yhteystiedot"];
-
-/* ---------------- data ---------------- */
-const EXAMS = [
-  { code: "A", field: "Tekniikka ja luonnontieteet", href: "https://valintakoea.fi", alat: "Fysiikka, kemia, matemaattiset tieteet, nanotiede, tietojenkäsittelytieteet ja tekniikka." },
-  { code: "B", field: "Lääke- ja terveystieteet", href: "https://valintakoeb.fi", alat: "Biokemia ja molekyylibiotieteet, biolääketiede, eläinlääketiede, farmasia, hammaslääketiede ja ravitsemustiede." },
-  { code: "C", field: "Biologia ja ympäristötieteet", href: "https://valintakoec.fi", alat: "Biologia ja ympäristötieteet, elintarviketieteet, geotieteet, maantiede, maatalous- ja metsätieteet." },
-  { code: "D", field: "Psykologia ja hyvinvointi", alat: "Logopedia, psykologia, terveystieteet ja hoitotiede sekä valmennustieteet ja liikuntabiologia." },
-  { code: "E", field: "Kasvatusala", href: "https://valintakoee.fi", alat: "Kasvatustieteet ja liikuntapedagogiikka." },
-  { code: "F", field: "Kauppatieteet", href: "https://valintakoefpro.com", alat: "Kauppatieteet, taloustiede, tietojärjestelmätiede sekä ympäristö- ja elintarviketalous." },
-  { code: "G", field: "Oikeus- ja yhteiskuntatieteet", alat: "Hallintotiede, oikeustiede, sosiaalitieteet, viestintätieteet ja yhteiskuntatieteet sekä liikunnan yhteiskuntatieteet." },
-  { code: "H", field: "Humanistiset tieteet", alat: "Filosofia, historia, kulttuurien tutkimus, taiteiden tutkimus ja teologia." },
-  { code: "I", field: "Kielet", alat: "Kielet, kielitieteet ja kirjallisuustieteet." },
-];
+import { SiteNav, SiteFooter } from "./components/SiteChrome";
+import { EXAMS } from "./config/site";
 
 const FAQ = [
   { q: "Voinko osallistua useampaan valintakokeeseen?", a: "Kyllä. Voit hakea usealle eri koulutusalalle ja osallistua niitä vastaaviin kokeisiin. Huomioi kuitenkin koepäivien mahdolliset päällekkäisyydet kevään aikatauluissa." },
@@ -57,29 +23,6 @@ const faqJsonLd = {
 };
 
 /* ---------------- yläpalkki ---------------- */
-function TopNav() {
-  return (
-    <header className="bg-navy text-white">
-      <div className="mx-auto flex h-[88px] max-w-site items-center gap-8 px-6 md:px-8">
-        <a href="#" className="flex shrink-0 items-center" aria-label="Pääsykoe.fi"><Logo /></a>
-        <nav className="hidden flex-1 items-center gap-7 lg:flex" aria-label="Päävalikko">
-          {NAV.map((item, i) => (
-            <a key={item} href="#" className={`font-heading text-[15px] font-semibold transition-colors ${i === 3 ? "text-gold" : "text-white/90 hover:text-gold"}`}>{item}</a>
-          ))}
-        </nav>
-        <div className="ml-auto flex items-center gap-4">
-          <div className="flex items-center gap-2.5">
-            <button aria-label="Suomeksi"><FlagFI /></button>
-            <button aria-label="På svenska"><FlagSE /></button>
-            <button aria-label="In English"><FlagEN /></button>
-          </div>
-          <button aria-label="Haku" className="ml-2 text-white/90 hover:text-gold"><SearchIcon /></button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
 /* ---------------- hero ---------------- */
 function Hero() {
   return (
@@ -103,7 +46,13 @@ function Hero() {
             Tee ilmainen tasotesti
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
           </a>
-          <span className="text-sm font-semibold text-navy/60">2 min · maksuton · saat henkilökohtaisen suosituksen</span>
+          <a
+            href="/todistusvalinta/laskuri"
+            className="inline-flex items-center gap-2 rounded-pill border-2 border-navy px-6 py-3.5 font-heading text-sm font-bold text-navy transition-colors hover:bg-mist"
+          >
+            Todistusvalintalaskuri
+          </a>
+          <span className="text-sm font-semibold text-navy/60">Maksuton · henkilökohtainen suositus</span>
         </div>
       </div>
     </section>
@@ -220,37 +169,6 @@ function Faq() {
 }
 
 /* ---------------- footer ---------------- */
-function Footer() {
-  const cols = [
-    ["Koulutukset & hakeminen", ["Hakeminen", "Aikataulut", "Hakukohteet"]],
-    ["Todistusvalinta", ["Pisteytys", "Vertailu", "Usein kysyttyä"]],
-    ["Valintakokeet", ["Yhdeksän koetta", "Valmistautuminen", "FAQ"]],
-  ];
-  return (
-    <footer className="bg-navy text-white">
-      <div className="mx-auto grid max-w-site gap-10 px-6 py-14 md:grid-cols-4 md:px-8">
-        <div>
-          <Logo />
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/70">
-            Tietopankki yliopistojen kansallisista valintakokeista 2026–2027.
-          </p>
-        </div>
-        {cols.map(([title, links]) => (
-          <nav key={title} aria-label={title}>
-            <h2 className="font-heading text-sm font-bold uppercase tracking-wider text-gold">{title}</h2>
-            <ul className="mt-4 space-y-2.5 text-sm text-white/75">
-              {links.map((l) => (<li key={l}><a href="#" className="hover:text-white">{l}</a></li>))}
-            </ul>
-          </nav>
-        ))}
-      </div>
-      <div className="border-t border-white/10">
-        <div className="mx-auto max-w-site px-6 py-5 text-xs text-white/50 md:px-8">© 2026 Pääsykoe.fi — tietopankki.</div>
-      </div>
-    </footer>
-  );
-}
-
 export default function Page() {
   return (
     <>
@@ -260,13 +178,13 @@ export default function Page() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <main>
-        <TopNav />
+        <SiteNav activePath="/" />
         <Hero />
         <ExamGrid />
         <TasotestiSection />
         <Preparation />
         <Faq />
-        <Footer />
+        <SiteFooter />
       </main>
     </>
   );
