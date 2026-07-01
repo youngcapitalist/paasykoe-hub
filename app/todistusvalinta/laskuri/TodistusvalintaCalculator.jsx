@@ -1,18 +1,88 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CERTIFICATE_FIELDS, SUBJECT_ROWS, courseForField } from "../../../lib/todistusvalinta/fields";
+import { CERTIFICATE_FIELDS, courseForField } from "../../../lib/todistusvalinta/fields";
 import { calculateCertificateScore, checkThresholds, assessResult, GRADES } from "../../../lib/todistusvalinta/scoring";
+import { YO_SUBJECTS, entriesToGrades, hasAidinkieli } from "../../../lib/todistusvalinta/subjects";
 
-const EMPTY = Object.fromEntries(SUBJECT_ROWS.map((r) => [r.key, ""]));
+let rowId = 0;
+function newRow(subjectId = "", grade = "") {
+  rowId += 1;
+  return { id: String(rowId), subjectId, grade };
+}
+
+const START_ROWS = [
+  newRow("aidinkieli", ""),
+  newRow("matematiikka_pitka", ""),
+  newRow("", ""),
+  newRow("", ""),
+  newRow("", ""),
+];
+
+function SubjectRow({ row, usedSubjects, onChange, onRemove, canRemove }) {
+  const available = YO_SUBJECTS.filter(
+    (s) => s.id === row.subjectId || !usedSubjects.has(s.id),
+  );
+
+  return (
+    <div className="grid grid-cols-1 gap-3 border-b border-line/60 pb-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+      <select
+        value={row.subjectId}
+        onChange={(e) => onChange({ ...row, subjectId: e.target.value, grade: row.subjectId !== e.target.value ? "" : row.grade })}
+        className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm font-semibold text-navy focus:border-navy focus:outline-none focus:ring-2 focus:ring-navy/20"
+        aria-label="Valitse aine"
+      >
+        <option value="">Valitse aine</option>
+        {available.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.label}
+          </option>
+        ))}
+      </select>
+
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Arvosana">
+        {GRADES.map((g) => (
+          <button
+            key={g}
+            type="button"
+            disabled={!row.subjectId}
+            onClick={() => onChange({ ...row, grade: g })}
+            className={`min-w-[2.5rem] rounded-lg border px-2.5 py-2 font-heading text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+              row.grade === g
+                ? "border-navy bg-navy text-gold"
+                : "border-line bg-white text-navy hover:border-navy/40 hover:bg-mist/60"
+            }`}
+          >
+            {g}
+          </button>
+        ))}
+      </div>
+
+      {canRemove ? (
+        <button
+          type="button"
+          onClick={onRemove}
+          className="justify-self-start text-sm font-semibold text-navy/50 hover:text-navy sm:justify-self-end"
+        >
+          Poista
+        </button>
+      ) : (
+        <span className="hidden sm:block" />
+      )}
+    </div>
+  );
+}
 
 export default function TodistusvalintaCalculator() {
   const [fieldId, setFieldId] = useState("F");
-  const [grades, setGrades] = useState(EMPTY);
+  const [rows, setRows] = useState(START_ROWS);
   const [showResult, setShowResult] = useState(false);
 
   const field = useMemo(() => CERTIFICATE_FIELDS.find((f) => f.id === fieldId), [fieldId]);
   const course = useMemo(() => courseForField(field), [field]);
+  const usedSubjects = useMemo(() => new Set(rows.map((r) => r.subjectId).filter(Boolean)), [rows]);
+
+  const grades = useMemo(() => entriesToGrades(rows), [rows]);
 
   const result = useMemo(() => {
     if (!showResult || !field) return null;
@@ -22,13 +92,23 @@ export default function TodistusvalintaCalculator() {
     return { score, thresholdIssues, assessment };
   }, [showResult, field, grades]);
 
-  function setGrade(key, value) {
-    setGrades((prev) => ({ ...prev, [key]: value }));
+  function updateRow(id, next) {
+    setRows((prev) => prev.map((r) => (r.id === id ? next : r)));
+    setShowResult(false);
+  }
+
+  function addRow() {
+    setRows((prev) => [...prev, newRow()]);
+    setShowResult(false);
+  }
+
+  function removeRow(id) {
+    setRows((prev) => (prev.length <= 1 ? prev : prev.filter((r) => r.id !== id)));
     setShowResult(false);
   }
 
   function calculate() {
-    if (!grades.aidinkieli) return;
+    if (!hasAidinkieli(rows)) return;
     setShowResult(true);
   }
 
@@ -39,7 +119,6 @@ export default function TodistusvalintaCalculator() {
 
   return (
     <div className="space-y-8">
-      {/* Step 1: field */}
       <div className="rounded-2xl border border-line bg-white p-6 md:p-8">
         <h2 className="font-heading text-lg font-bold text-navy">1. Valitse hakuala</h2>
         <p className="mt-2 text-sm text-navy/70">
@@ -72,49 +151,47 @@ export default function TodistusvalintaCalculator() {
         </div>
       </div>
 
-      {/* Step 2: grades */}
       <div className="rounded-2xl border border-line bg-white p-6 md:p-8">
         <h2 className="font-heading text-lg font-bold text-navy">2. Syötä ylioppilaskokeiden arvosanat</h2>
         <p className="mt-2 text-sm text-navy/70">
-          Kirjoita vain suorittamasi aineet. Laskuri valitsee automaattisesti sinulle parhaan aineyhdistelmän.
+          Valitse aine ja arvosana (L–A). Lisää kaikki kirjoittamasi aineet — laskuri poimii parhaan yhdistelmän
+          automaattisesti.
         </p>
-        <div className="mt-6 space-y-3">
-          {SUBJECT_ROWS.map((row) => (
-            <div
-              key={row.key}
-              className="grid grid-cols-1 items-center gap-2 border-b border-line/60 pb-3 sm:grid-cols-[1fr_auto]"
-            >
-              <label htmlFor={row.key} className="text-sm font-semibold text-navy">
-                {row.label}
-                {row.required && <span className="ml-1 text-gold">*</span>}
-              </label>
-              <select
-                id={row.key}
-                value={grades[row.key]}
-                onChange={(e) => setGrade(row.key, e.target.value)}
-                className="rounded-lg border border-line bg-white px-3 py-2 text-sm font-semibold text-navy focus:border-navy focus:outline-none focus:ring-2 focus:ring-navy/20"
-              >
-                <option value="">—</option>
-                {GRADES.map((g) => (
-                  <option key={g} value={g}>
-                    {g}
-                  </option>
-                ))}
-              </select>
-            </div>
+
+        <div className="mt-6 space-y-1">
+          {rows.map((row) => (
+            <SubjectRow
+              key={row.id}
+              row={row}
+              usedSubjects={usedSubjects}
+              onChange={(next) => updateRow(row.id, next)}
+              onRemove={() => removeRow(row.id)}
+              canRemove={rows.length > 1}
+            />
           ))}
         </div>
+
+        <button
+          type="button"
+          onClick={addRow}
+          className="mt-4 text-sm font-bold text-navy underline underline-offset-4 hover:text-navy-light"
+        >
+          + Lisää aine
+        </button>
+
         <button
           type="button"
           onClick={calculate}
-          disabled={!grades.aidinkieli}
+          disabled={!hasAidinkieli(rows)}
           className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-pill bg-navy px-6 py-3.5 font-heading text-sm font-bold text-gold transition-colors hover:bg-navy-light disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           Laske todistuspisteet
         </button>
+        {!hasAidinkieli(rows) && (
+          <p className="mt-2 text-xs text-navy/50">Lisää vähintään äidinkieli arvosanoineen.</p>
+        )}
       </div>
 
-      {/* Results */}
       {result && (
         <div className="space-y-6">
           <div className="rounded-2xl border border-line bg-white p-6 md:p-8">
@@ -154,12 +231,12 @@ export default function TodistusvalintaCalculator() {
               <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-navy/50">Pisteytyksen erittely</h4>
               <ul className="mt-3 divide-y divide-line rounded-xl border border-line">
                 {result.score.breakdown.map((row) => (
-                  <li key={`${row.slot}-${row.key}`} className="flex items-center justify-between px-4 py-3 text-sm">
+                  <li key={`${row.slot}-${row.key}`} className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
                     <span className="text-navy/80">
-                      {row.slot}
+                      {row.label || row.slot}
                       <span className="ml-2 font-semibold text-navy">{row.grade}</span>
                     </span>
-                    <span className="font-heading font-bold text-navy">{row.points.toFixed(1)} p</span>
+                    <span className="shrink-0 font-heading font-bold text-navy">{row.points.toFixed(1)} p</span>
                   </li>
                 ))}
               </ul>
@@ -173,8 +250,8 @@ export default function TodistusvalintaCalculator() {
               </span>
               <h3 className="mt-4 font-heading text-2xl font-extrabold">Todistus ei riitä — valmistaudu valintakokeeseen</h3>
               <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-white/85">
-                Noin puolet yliopisto-opiskelijoista tulee valituksi valintakokeen kautta.{" "}
-                {course.title} auttaa sinua erottumaan hakijajoukosta kevään 2027 kokeessa.
+                Noin puolet yliopisto-opiskelijoista tulee valituksi valintakokeen kautta. {course.title} auttaa sinua
+                erottumaan hakijajoukosta kevään 2027 kokeessa.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
@@ -203,7 +280,10 @@ export default function TodistusvalintaCalculator() {
                 Vaikka todistuspisteesi näyttävät hyviltä, hakukohtekohtaiset rajat vaihtelevat. Jos haluat varmistaa
                 pääsyn tai tavoittelet kilpailtuja ohjelmia, valintakokeeseen valmistautuminen on silti hyödyllistä.
               </p>
-              <a href={course.href} className="mt-4 inline-block font-heading text-sm font-bold text-navy underline underline-offset-4 hover:text-navy-light">
+              <a
+                href={course.href}
+                className="mt-4 inline-block font-heading text-sm font-bold text-navy underline underline-offset-4 hover:text-navy-light"
+              >
                 Kurssi valintakokeeseen {course.code} →
               </a>
             </div>
@@ -211,7 +291,7 @@ export default function TodistusvalintaCalculator() {
 
           <p className="text-xs leading-relaxed text-navy/50">
             Laskuri on suuntaa-antava eikä korvaa virallista Opintopolun pistelaskentaa. Tarkat hakukohtekohtaiset
-            vähimmäispisteet ja valintaperusteet:{" "}
+            vähimmäispisteet:{" "}
             <a href="https://yliopistovalinnat.fi/todistusvalinnan-pisteytykset-vuodesta-2026" className="underline">
               yliopistovalinnat.fi
             </a>
