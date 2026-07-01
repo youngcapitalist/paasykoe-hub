@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 const COURSE_CODES = ["A", "B", "C", "E", "F"]; // alat, joille on kurssi (suositus)
 const TARGET_CODES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "unknown"]; // hakukohde
+const LEAD_SOURCES = ["tasotesti", "laudaturpro", "todistusvalinta"];
 
 export async function POST(request) {
   let data;
@@ -35,21 +36,32 @@ export async function POST(request) {
       ? Math.round(data.offeredPriceEur)
       : null;
 
+  const source = LEAD_SOURCES.includes(data?.source) ? data.source : "tasotesti";
+  const productId = typeof data?.productId === "string" ? data.productId.trim() || null : null;
+  const productName = typeof data?.productName === "string" ? data.productName.trim() || null : null;
+  const laudaturPriceEur =
+    typeof data?.priceEur === "number" && data.priceEur >= 29 && data.priceEur <= 2000
+      ? Math.round(data.priceEur)
+      : null;
+
   const lead = {
     email,
     name: typeof data?.name === "string" ? data.name.trim() || null : null,
     // ensisijainen hakukohde -> liidiryhmä (mikä tahansa 9 koetta tai "unknown")
     preferredCode: TARGET_CODES.includes(data?.preferredCode) ? data.preferredCode : null,
-    preferredField: typeof data?.preferredField === "string" ? data.preferredField : null,
+    preferredField:
+      productName ||
+      (typeof data?.preferredField === "string" ? data.preferredField : null),
     // testin suositus (aina jokin kurssikoodi, voi poiketa valitusta)
     recommendedCode: COURSE_CODES.includes(data?.recommendedCode) ? data.recommendedCode : null,
     recommendedField: typeof data?.recommendedField === "string" ? data.recommendedField : null,
-    painKey: typeof data?.painKey === "string" ? data.painKey : null,
+    painKey: productId || (typeof data?.painKey === "string" ? data.painKey : null),
     scores: data?.scores && typeof data.scores === "object" ? data.scores : null,
     wtpScore,
-    offeredPriceEur,
+    offeredPriceEur: laudaturPriceEur ?? offeredPriceEur,
     offerExam: COURSE_CODES.includes(data?.offerExam) ? data.offerExam : null,
-    source: "tasotesti",
+    source,
+    utm: data?.utm && typeof data.utm === "object" ? data.utm : null,
     receivedAt: new Date().toISOString(),
   };
 

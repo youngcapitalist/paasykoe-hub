@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "updated": "2026-06-25",
+    "source": "Vipunen / Opintopolun opiskelijavalintarekisteri (22.–25.5.2026)",
+    "note": "Alustavat rajat. Voivat muuttua varasijavalinnan myötä. Kauppatieteet ja lääketiede: vain ensikertalaiset. DI: usein erilliset ensikertalais- ja kaikkien jonot."
+  },
+  "programs": {
+    "aalto-kauppa": { "2026": { "min": 133.8, "firstMin": 133.8, "firstOnly": true } },
+    "tampere-kauppa": { "2026": { "min": 126.6, "firstMin": 126.6, "firstOnly": true } },
+    "turku-kauppa": { "2026": { "min": 127.2, "firstMin": 127.2, "firstOnly": true } },
+    "lut-kauppa": { "2026": { "min": 115.4, "firstMin": 115.4, "firstOnly": true } },
+    "hanken": { "2026": { "min": 124.2, "firstMin": 124.2, "firstOnly": true } },
+    "jyv-kauppa": { "2026": { "min": 119.5, "firstMin": 119.5, "firstOnly": true } },
+    "oulu-kauppa": { "2026": { "min": 113.1, "firstMin": 113.1, "firstOnly": true } },
+    "vaasa-kauppa": { "2026": { "min": 114.1, "firstMin": 114.1, "firstOnly": true } },
+    "helsinki-laak": { "2026": { "min": 186.5, "firstMin": 186.5, "firstOnly": true } },
+    "tampere-laak": { "2026": { "min": 184.6, "firstMin": 184.6, "firstOnly": true } },
+    "turku-laak": { "2026": { "min": 182.9, "firstMin": 182.9, "firstOnly": true } },
+    "oulu-laak": { "2026": { "min": 178.7, "firstMin": 178.7, "firstOnly": true } },
+    "helsinki-hammas": { "2026": { "min": 174.3, "firstMin": 174.3, "firstOnly": true } },
+    "helsinki-farmasia": { "2026": { "min": 153.2, "firstMin": 145.1, "firstOnly": false } },
+    "aalto-di": { "2026": { "min": 168.7, "firstMin": 168.5, "firstOnly": false } },
+    "tampere-di": { "2026": { "min": 132.2, "firstMin": 132.2, "firstOnly": false } },
+    "oulu-di": { "2026": { "min": 108.5, "firstMin": 108.5, "firstOnly": false } },
+    "lut-di": { "2026": { "min": 110, "firstMin": 110, "firstOnly": false } },
+    "helsinki-tkt": { "2026": { "min": 96.6, "firstMin": 96.6, "firstOnly": true } },
+    "helsinki-bio": { "2026": { "min": 158, "firstMin": 139.1, "firstOnly": false } },
+    "helsinki-kasvatus": { "2026": { "min": 122.4, "firstMin": 102.6, "firstOnly": false } },
+    "helsinki-psy": { "2026": { "min": 147.5, "firstMin": 147.5, "firstOnly": true } },
+    "helsinki-oikeus": { "2026": { "min": 136.2, "firstMin": 136.2, "firstOnly": true } },
+    "turku-oikeus": { "2026": { "min": 139.2, "firstMin": 139.2, "firstOnly": true } },
+    "helsinki-historia": { "2026": { "min": 151.5, "firstMin": 140, "firstOnly": false } },
+    "helsinki-englanti": { "2026": { "min": 142.7, "firstMin": 119.7, "firstOnly": false } }
+  }
+}

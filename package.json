@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "import:vipunen": "node scripts/import-vipunen-pisterajat.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

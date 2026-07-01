@@ -8,6 +8,9 @@ import {
   qualifiesForWtpOffer,
 } from "../../../lib/wtp";
 import { getCourse } from "../../../app/courses";
+import { enrollInDrip } from "../../../lib/drip/enroll.js";
+import { canSendDrip } from "../../../lib/drip/eligibility.js";
+import { streamFromExamCode } from "../../../lib/drip/streams.js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,6 +70,24 @@ export async function POST(request) {
   );
 
   const base = course.href.replace(/\/$/, "");
+  const checkoutUrl = `${base}/?offer=${encodeURIComponent(token)}#pricing`;
+
+  const streamConfig = streamFromExamCode(examCode);
+  if (streamConfig) {
+    const dripEligible = await canSendDrip(email, streamConfig.id);
+    if (dripEligible.ok) {
+      await enrollInDrip({
+        email,
+        stream: streamConfig.id,
+        payload: {
+          personalTitle: `Valintakoe ${examCode} — henkilökohtainen tarjous`,
+          priceEur,
+          checkoutUrl,
+          examCode,
+        },
+      }).catch((err) => console.error("[DRIP] enroll failed", err));
+    }
+  }
 
   return Response.json({
     ok: true,
@@ -77,6 +98,6 @@ export async function POST(request) {
     wtpScore,
     liveMasterclasses,
     priceRange: { min: wtpOfferMinEur(examCode), max: WTP_MAX_EUR },
-    checkoutUrl: `${base}/?offer=${encodeURIComponent(token)}#pricing`,
+    checkoutUrl,
   });
 }
