@@ -31,6 +31,7 @@ export const FOOTER_COLUMNS = [
     title: "Todistusvalinta",
     links: [
       { label: "Laskuri", href: "/todistusvalinta/laskuri" },
+      { label: "Yo-valmennus (LaudaturPro)", href: "https://laudaturpro.fi/aloita?utm_source=paasykoe&utm_medium=footer" },
       { label: "Pisteytys 2026", href: "https://yliopistovalinnat.fi/todistusvalinnan-pisteytykset-vuodesta-2026" },
       { label: "Usein kysyttyä", href: "/#faq-otsikko" },
     ],
