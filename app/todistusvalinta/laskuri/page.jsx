@@ -20,8 +20,9 @@ export default function TodistusvalintaLaskuriPage() {
             Todistusvalintalaskuri
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-relaxed text-navy/85">
-            Laske ylioppilastutkintosi todistuspisteet ja vertaa niitä hakemaasi alaan. Jos pisteet eivät riitä
-            todistusvalintaan, valintakoe on reitti opiskelupaikkaan — ja siihen voit valmistautua meidän kursseillamme.
+            Laske todistuspisteesi, näe mihin ne riittävät — ja suunnittele paras mahdollinen yo-tulos unelmiesi
+            yliopistoon. Korkeammat arvosanat nostavat pisteitä suoraan. Jos pisteet eivät riitä, valintakoe on
+            vaihtoehtoinen reitti opiskelupaikkaan.
           </p>
           <div className="mt-10">
             <TodistusvalintaCalculator />

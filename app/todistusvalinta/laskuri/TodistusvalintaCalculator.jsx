@@ -52,6 +52,15 @@ function highlightText(text, query) {
   );
 }
 
+/** "Aalto-yliopisto" → "Aaltoon", "Turun yliopisto" → "Turun yliopistoon" */
+function universityRouteDest(university) {
+  if (university === "Aalto-yliopisto") return "Aaltoon";
+  if (university === "Hanken, Helsingfors") return "Hankeniin";
+  if (university.endsWith("-yliopisto")) return `${university}on`;
+  if (university.endsWith(" yliopisto")) return university.replace(/ yliopisto$/, " yliopistoon");
+  return university;
+}
+
 function SubjectRow({ row, usedSubjects, onChange, onRemove, canRemove }) {
   const available = YO_SUBJECTS.filter((s) => s.id === row.subjectId || !usedSubjects.has(s.id));
 
@@ -183,9 +192,12 @@ export default function TodistusvalintaCalculator() {
     <div className="space-y-10">
       {/* Arvosanat */}
       <div className="rounded-2xl border border-line bg-white p-6 md:p-8">
-        <p className="text-[15px] leading-relaxed text-navy/80">
-          Kerro yo-arvosanasi. Laskuri näyttää heti, mihin hakukohteisiin todistuspisteesi riittäisivät vuoden 2026
-          pisteytyksellä.
+        <p className="font-heading text-lg font-extrabold text-navy">
+          Korota yo-pisteitä — tai suunnittele paras mahdollinen yo-tulos
+        </p>
+        <p className="mt-2 text-[15px] leading-relaxed text-navy/80">
+          Syötä nykyiset arvosanasi tai arvio siitä, mihin voit vielä päästä. Näet heti, mihin hakukohteisiin
+          todistuspisteesi riittäisivät vuoden 2026 pisteytyksellä — ja mitä arvosanoja kannattaa nostaa.
         </p>
 
         <div className="mt-6 divide-y divide-line/60">
@@ -238,6 +250,10 @@ export default function TodistusvalintaCalculator() {
       {/* Hakukohteet */}
       <div>
         <h2 className="font-heading text-2xl font-extrabold text-navy">Hakukohteet</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-navy/70">
+          Etsi unelmiesi koulutus ja suunnittele yo-valmistautuminen suoraan sinne — korkeammat arvosanat nostavat
+          todistuspisteitä automaattisesti.
+        </p>
 
         {!ready ? (
           <p className="mt-4 text-sm text-navy/60">Syötä vähintään äidinkieli ja yksi arvosana nähdäksesi tulokset.</p>
@@ -326,42 +342,74 @@ export default function TodistusvalintaCalculator() {
               {programs.length === 0 && (
                 <li className="px-5 py-8 text-center text-sm text-navy/50">Ei hakukohteita valituilla suodattimilla.</li>
               )}
-              {programs.map((p) => (
-                <li key={p.id} className="group px-5 py-4 transition-colors hover:bg-mist/40">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-start gap-2">
-                        <button
-                          type="button"
-                          onClick={() => toggleFavorite(p.id)}
-                          className={`mt-0.5 shrink-0 text-lg leading-none ${favorites.has(p.id) ? "text-gold-dark" : "text-navy/20 hover:text-gold-dark"}`}
-                          aria-label={favorites.has(p.id) ? "Poista suosikeista" : "Lisää suosikkeihin"}
-                        >
-                          ★
-                        </button>
-                        <div>
-                          <p className="font-heading text-base font-bold leading-snug text-navy">
-                            {highlightText(p.title, search)}
-                          </p>
-                          <p className="mt-0.5 text-sm text-navy/55">{p.university}</p>
-                          <p className="mt-1 text-xs text-navy/45">{highlightText(p.subtitle, search)}</p>
+              {programs.map((p) => {
+                const routeDest = universityRouteDest(p.university);
+                const needsBoost = p.userScore > 0 && !p.likely2026;
+                const latest = p.years[0];
+
+                return (
+                  <li key={p.id} className="group px-5 py-4 transition-colors hover:bg-mist/40">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start gap-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleFavorite(p.id)}
+                            className={`mt-0.5 shrink-0 text-lg leading-none ${favorites.has(p.id) ? "text-gold-dark" : "text-navy/20 hover:text-gold-dark"}`}
+                            aria-label={favorites.has(p.id) ? "Poista suosikeista" : "Lisää suosikkeihin"}
+                          >
+                            ★
+                          </button>
+                          <div>
+                            <p className="font-heading text-base font-bold leading-snug text-navy">
+                              {highlightText(p.title, search)}
+                            </p>
+                            <p className="mt-0.5 text-sm text-navy/55">{p.university}</p>
+                            <p className="mt-1 text-xs text-navy/45">{highlightText(p.subtitle, search)}</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 pl-7">
+                          {p.years.map((y) => (
+                            <span key={y.year} className="text-xs text-navy/50">
+                              <span className="font-semibold text-navy/70">{y.year}</span>{" "}
+                              <YearCell userScore={y.userScore} bar={y.bar} ok={y.ok} />
+                            </span>
+                          ))}
+                          {needsBoost && latest && (
+                            <span className="text-xs font-semibold text-amber-800">
+                              Nosta arvosanoja — tarvitset noin {(latest.bar - latest.userScore).toFixed(1)} pistettä
+                              lisää
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 pl-7">
-                        {p.years.map((y) => (
-                          <span key={y.year} className="text-xs text-navy/50">
-                            <span className="font-semibold text-navy/70">{y.year}</span>{" "}
-                            <YearCell userScore={y.userScore} bar={y.bar} ok={y.ok} />
-                          </span>
-                        ))}
-                      </div>
+                      <a
+                        href={laudaturQuizUrl({
+                          utm_medium: "todistusvalinta",
+                          utm_campaign: p.id,
+                          kohde: routeDest,
+                        })}
+                        className={`shrink-0 self-start rounded-pill px-4 py-2.5 text-center font-heading text-xs font-bold leading-snug transition-colors sm:max-w-[11rem] ${
+                          needsBoost
+                            ? "bg-gold text-navy hover:opacity-90"
+                            : "border border-line bg-white text-navy hover:border-navy/30 hover:bg-mist"
+                        }`}
+                      >
+                        {needsBoost ? (
+                          <>
+                            Korota arvosanaa
+                            <span className="mt-0.5 block font-sans text-[11px] font-semibold opacity-75">
+                              Saa paremmat arvosanat
+                            </span>
+                          </>
+                        ) : (
+                          <>Suunnittele varma reitti {routeDest}</>
+                        )}
+                      </a>
                     </div>
-                    <span className="mt-1 shrink-0 text-navy/25 group-hover:text-navy/50" aria-hidden>
-                      ›
-                    </span>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
 
             {ready && belowCount > 0 && (
