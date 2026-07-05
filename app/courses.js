@@ -1,6 +1,5 @@
 // Kurssilinkit ja -tiedot. Jaettu etusivun ja tasotestin kesken.
-// Hinnat, paikat ja sulkeutumispäivät ovat vielä vahvistamattomia esimerkkejä
-// — päivitä omilla luvuillasi.
+// Listahinnat = kurssisivujen vakiopaketit (WTP-minimi tasotestissä).
 export const COURSES = [
   {
     code: "B",
@@ -33,8 +32,8 @@ export const COURSES = [
     rating: 4.6,
     price: "99 €",
     oldPrice: "199 €",
-    vipPrice: "149 €",
-    vipOldPrice: "249 €",
+    vipPrice: "249 €",
+    vipOldPrice: "499 €",
     seatsLeft: 12,
     closing: "Vain kevään ryhmä jäljellä",
     popular: false,
@@ -53,10 +52,10 @@ export const COURSES = [
     title: "Kauppiksen valmennuskurssi 2027",
     href: "https://valintakoefpro.com",
     rating: 4.7,
-    price: "99 €",
-    oldPrice: "199 €",
-    vipPrice: "149 €",
-    vipOldPrice: "249 €",
+    price: "149 €",
+    oldPrice: "249 €",
+    vipPrice: "499 €",
+    vipOldPrice: "699 €",
     seatsLeft: 9,
     closing: "Early bird -hinta päättyy pian",
     popular: false,
@@ -78,8 +77,8 @@ export const COURSES = [
     rating: 4.9,
     price: "99 €",
     oldPrice: "199 €",
-    vipPrice: "149 €",
-    vipOldPrice: "249 €",
+    vipPrice: "249 €",
+    vipOldPrice: "499 €",
     seatsLeft: 15,
     closing: "Ryhmäkoko rajattu henkilökohtaisen ohjauksen vuoksi",
     popular: false,
@@ -100,8 +99,8 @@ export const COURSES = [
     rating: 4.5,
     price: "99 €",
     oldPrice: "199 €",
-    vipPrice: "149 €",
-    vipOldPrice: "249 €",
+    vipPrice: "249 €",
+    vipOldPrice: "499 €",
     seatsLeft: 11,
     closing: "Kevään ryhmän paikat täyttyvät",
     popular: false,
