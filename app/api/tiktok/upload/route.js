@@ -2,9 +2,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { put } from "@vercel/blob";
-import { isValidTikTokSlug, tiktokBlobPath } from "../../../../lib/tiktok-pages.js";
+import crypto from "crypto";
 
-const MAX_HTML_BYTES = 512 * 1024;
+// Max 20 MB (TikTok photo limit); our JPEGs are ~300-500 KB.
+const MAX_BYTES = 20 * 1024 * 1024;
 
 function unauthorized() {
   return Response.json({ error: "unauthorized" }, { status: 401 });
@@ -13,44 +14,33 @@ function unauthorized() {
 function uploadSecret(request) {
   const auth = request.headers.get("authorization");
   if (auth?.startsWith("Bearer ")) return auth.slice(7);
-  return request.headers.get("x-tiktok-upload-secret");
+  return request.headers.get("x-upload-secret");
 }
 
 export async function POST(request) {
   const expected = process.env.TIKTOK_UPLOAD_SECRET;
   if (!expected || uploadSecret(request) !== expected) return unauthorized();
 
-  let data;
-  try {
-    data = await request.json();
-  } catch {
-    return Response.json({ error: "invalid_json" }, { status: 400 });
+  const buf = Buffer.from(await request.arrayBuffer());
+  if (!buf.length) {
+    return Response.json({ error: "empty_body" }, { status: 400 });
+  }
+  if (buf.length > MAX_BYTES) {
+    return Response.json({ error: "too_large" }, { status: 413 });
   }
 
-  const slug = typeof data?.slug === "string" ? data.slug.trim().toLowerCase() : "";
-  const html = typeof data?.html === "string" ? data.html : "";
+  const pathname = `${crypto.randomUUID().replace(/-/g, "")}.jpg`;
 
-  if (!isValidTikTokSlug(slug)) {
-    return Response.json({ error: "invalid_slug" }, { status: 400 });
-  }
-  if (!html.trim()) {
-    return Response.json({ error: "empty_html" }, { status: 400 });
-  }
-  if (Buffer.byteLength(html, "utf8") > MAX_HTML_BYTES) {
-    return Response.json({ error: "html_too_large" }, { status: 413 });
-  }
-
-  const blob = await put(tiktokBlobPath(slug), html, {
+  await put(pathname, buf, {
     access: "public",
-    contentType: "text/html; charset=utf-8",
+    contentType: "image/jpeg",
     addRandomSuffix: false,
-    allowOverwrite: true,
+    allowOverwrite: false,
+    token: process.env.BLOB_READ_WRITE_TOKEN,
   });
 
-  return Response.json({
-    ok: true,
-    slug,
-    path: `/t/${slug}`,
-    blobUrl: blob.url,
-  });
+  // Serve from the verified domain (paasykoe.fi/_tiktok/...) via the
+  // next.config rewrite, so TikTok's pull_by_url accepts it.
+  const base = process.env.TIKTOK_MEDIA_BASE || "https://xn--psykoe-buaa.fi/_tiktok";
+  return Response.json({ ok: true, url: `${base}/${pathname}`, pathname });
 }
