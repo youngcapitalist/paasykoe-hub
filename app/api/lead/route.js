@@ -10,6 +10,8 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+import { painLabelFromKey, buildQuizMeta } from "../../../lib/hub-quiz-labels.js";
+
 const COURSE_CODES = ["A", "B", "C", "E", "F"]; // alat, joille on kurssi (suositus)
 const TARGET_CODES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "unknown"]; // hakukohde
 const LEAD_SOURCES = ["tasotesti", "laudaturpro", "todistusvalinta"];
@@ -39,6 +41,13 @@ export async function POST(request) {
   const source = LEAD_SOURCES.includes(data?.source) ? data.source : "tasotesti";
   const productId = typeof data?.productId === "string" ? data.productId.trim() || null : null;
   const productName = typeof data?.productName === "string" ? data.productName.trim() || null : null;
+  const painKeyRaw = productId || (typeof data?.painKey === "string" ? data.painKey : null);
+  const painLabelRaw =
+    productName ||
+    (typeof data?.painLabel === "string" ? data.painLabel.trim() || null : null) ||
+    painLabelFromKey(painKeyRaw);
+  const quizMetaIn =
+    data?.quizMeta && typeof data.quizMeta === "object" ? data.quizMeta : null;
   const laudaturPriceEur =
     typeof data?.priceEur === "number" && data.priceEur >= 29 && data.priceEur <= 2000
       ? Math.round(data.priceEur)
@@ -55,7 +64,15 @@ export async function POST(request) {
     // testin suositus (aina jokin kurssikoodi, voi poiketa valitusta)
     recommendedCode: COURSE_CODES.includes(data?.recommendedCode) ? data.recommendedCode : null,
     recommendedField: typeof data?.recommendedField === "string" ? data.recommendedField : null,
-    painKey: productId || (typeof data?.painKey === "string" ? data.painKey : null),
+    painKey: painKeyRaw,
+    painLabel: painLabelRaw,
+    quizMeta:
+      quizMetaIn ||
+      buildQuizMeta({
+        painKey: painKeyRaw,
+        painLabel: painLabelRaw,
+        scores: data?.scores && typeof data.scores === "object" ? data.scores : null,
+      }),
     scores: data?.scores && typeof data.scores === "object" ? data.scores : null,
     wtpScore,
     offeredPriceEur: laudaturPriceEur ?? offeredPriceEur,
@@ -102,6 +119,8 @@ export async function POST(request) {
           recommended_code: lead.recommendedCode,
           recommended_field: lead.recommendedField,
           pain_key: lead.painKey,
+          pain_label: lead.painLabel,
+          quiz_meta: lead.quizMeta,
           scores: lead.scores,
           wtp_score: lead.wtpScore,
           offered_price_eur: lead.offeredPriceEur,

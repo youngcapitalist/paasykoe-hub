@@ -11,6 +11,7 @@ import { getCourse } from "../../../app/courses";
 import { enrollInDrip } from "../../../lib/drip/enroll.js";
 import { canSendDrip } from "../../../lib/drip/eligibility.js";
 import { streamFromExamCode } from "../../../lib/drip/streams.js";
+import { painDripHook, wtpBudgetLabelFromScore } from "../../../lib/hub-quiz-labels.js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -76,6 +77,14 @@ export async function POST(request) {
   if (streamConfig) {
     const dripEligible = await canSendDrip(email, streamConfig.id);
     if (dripEligible.ok) {
+      const quizMeta = data?.quizMeta && typeof data.quizMeta === "object" ? data.quizMeta : {};
+      const painKey = typeof data?.painKey === "string" ? data.painKey : quizMeta.pain_key || null;
+      const painLabel =
+        typeof data?.painLabel === "string"
+          ? data.painLabel
+          : quizMeta.pain_label || null;
+      const budgetLabel =
+        quizMeta.wtp_budget_label || wtpBudgetLabelFromScore(wtpScore) || null;
       await enrollInDrip({
         email,
         stream: streamConfig.id,
@@ -84,6 +93,16 @@ export async function POST(request) {
           priceEur,
           checkoutUrl,
           examCode,
+          painKey,
+          painLabel,
+          painHook: painDripHook(painKey),
+          wtpScore,
+          wtpBudgetLabel: budgetLabel,
+          wtpCommitmentLabel: quizMeta.wtp_commitment_label || null,
+          wtpPriorityLabel: quizMeta.wtp_priority_label || null,
+          recommendedField:
+            typeof data?.recommendedField === "string" ? data.recommendedField : null,
+          preferredField: typeof data?.preferredField === "string" ? data.preferredField : null,
         },
       }).catch((err) => console.error("[DRIP] enroll failed", err));
     }

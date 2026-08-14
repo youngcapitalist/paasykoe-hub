@@ -5,6 +5,7 @@ import { COURSES, getCourse, EXAM_TARGETS } from "../courses";
 import {
   WTP_BUDGET_QUESTION,
   WTP_EXTRA_QUESTIONS,
+  WTP_QUESTIONS,
   computeWtpScore,
   wtpScoreToPriceEur,
   wtpScoreToVipPriceEur,
@@ -17,6 +18,7 @@ import {
   qualifiesForWtpOffer,
 } from "../../lib/wtp";
 import { persistHubOffer, clearHubOffer } from "../../lib/wtp-persist";
+import { buildQuizMeta } from "../../lib/hub-quiz-labels";
 
 const COURSE_CODES = ["A", "B", "C", "E", "F"];
 const targetField = (code) =>
@@ -333,6 +335,15 @@ export default function Quiz() {
     const wtpScore = computeWtpScore(wtpAnswers);
     const hasOffer = Boolean(offerExamCode);
     const offeredPriceEur = hasOffer ? wtpScoreToPriceEur(wtpScore, offerExamCode) : null;
+    const quizMeta = buildQuizMeta({
+      painKey: pain?.key || null,
+      painLabel: pain?.label || null,
+      wtpAnswers,
+      wtpQuestions: WTP_QUESTIONS,
+      selectedTargets,
+      algorithmCode: algoCode,
+      scores,
+    });
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
@@ -345,6 +356,8 @@ export default function Quiz() {
           recommendedCode: algoCode || primaryCode,
           recommendedField: algorithmCourse?.field || primaryCourse?.field,
           painKey: pain?.key || null,
+          painLabel: pain?.label || null,
+          quizMeta,
           scores,
           wtpScore,
           offeredPriceEur: hasOffer ? offeredPriceEur : null,
@@ -361,6 +374,11 @@ export default function Quiz() {
             email: email.trim(),
             wtpScore,
             examCode: offerExamCode,
+            painKey: pain?.key || null,
+            painLabel: pain?.label || null,
+            quizMeta,
+            recommendedField: algorithmCourse?.field || primaryCourse?.field,
+            preferredField: targetField(leadPreferred),
           }),
         });
         if (offerRes.ok) {
