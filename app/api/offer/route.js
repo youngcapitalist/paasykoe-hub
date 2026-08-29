@@ -12,6 +12,7 @@ import { enrollInDrip } from "../../../lib/drip/enroll.js";
 import { canSendDrip } from "../../../lib/drip/eligibility.js";
 import { streamFromExamCode } from "../../../lib/drip/streams.js";
 import { painDripHook, wtpBudgetLabelFromScore } from "../../../lib/hub-quiz-labels.js";
+import { sendValintakoeQuizOfferEmail } from "../../../lib/quiz-offer-email.js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -74,6 +75,7 @@ export async function POST(request) {
   const checkoutUrl = `${base}/?offer=${encodeURIComponent(token)}#pricing`;
 
   const streamConfig = streamFromExamCode(examCode);
+  let dripEnrolled = false;
   if (streamConfig) {
     const dripEligible = await canSendDrip(email, streamConfig.id);
     if (dripEligible.ok) {
@@ -85,7 +87,11 @@ export async function POST(request) {
           : quizMeta.pain_label || null;
       const budgetLabel =
         quizMeta.wtp_budget_label || wtpBudgetLabelFromScore(wtpScore) || null;
-      await enrollInDrip({
+      const recommendedField =
+        typeof data?.recommendedField === "string" ? data.recommendedField : null;
+      const preferredField = typeof data?.preferredField === "string" ? data.preferredField : null;
+
+      const drip = await enrollInDrip({
         email,
         stream: streamConfig.id,
         payload: {
@@ -100,13 +106,33 @@ export async function POST(request) {
           wtpBudgetLabel: budgetLabel,
           wtpCommitmentLabel: quizMeta.wtp_commitment_label || null,
           wtpPriorityLabel: quizMeta.wtp_priority_label || null,
-          recommendedField:
-            typeof data?.recommendedField === "string" ? data.recommendedField : null,
-          preferredField: typeof data?.preferredField === "string" ? data.preferredField : null,
+          recommendedField,
+          preferredField,
         },
-      }).catch((err) => console.error("[DRIP] enroll failed", err));
+      }).catch((err) => {
+        console.error("[DRIP] enroll failed", err);
+        return { error: "enroll_exception" };
+      });
+      if (drip?.ok) dripEnrolled = true;
+      if (drip?.error) console.error("[DRIP] enroll rejected", drip);
     }
   }
+
+  const mail = await sendValintakoeQuizOfferEmail({
+    email,
+    examCode,
+    priceEur,
+    vipPriceEur,
+    checkoutUrl,
+    painKey: typeof data?.painKey === "string" ? data.painKey : data?.quizMeta?.pain_key || null,
+    painLabel: typeof data?.painLabel === "string" ? data.painLabel : data?.quizMeta?.pain_label || null,
+    recommendedField: typeof data?.recommendedField === "string" ? data.recommendedField : null,
+    preferredField: typeof data?.preferredField === "string" ? data.preferredField : null,
+  }).catch((err) => {
+    console.error("[EMAIL] first offer failed", err);
+    return { error: "send_exception" };
+  });
+  if (mail?.error) console.error("[EMAIL] first offer rejected", mail);
 
   return Response.json({
     ok: true,
@@ -118,5 +144,7 @@ export async function POST(request) {
     liveMasterclasses,
     priceRange: { min: wtpOfferMinEur(examCode), max: WTP_MAX_EUR },
     checkoutUrl,
+    emailSent: !!mail?.ok,
+    dripEnrolled,
   });
 }
