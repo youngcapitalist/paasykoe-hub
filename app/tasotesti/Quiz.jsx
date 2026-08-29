@@ -10,15 +10,13 @@ import {
   wtpScoreToPriceEur,
   wtpScoreToVipPriceEur,
   formatPriceEur,
-  wtpPriceIncludesConsultation,
-  WTP_CALENDLY_URL,
-  wtpConsultationEmail,
   resolvePrimaryCode,
   recommendationsIncludeWtpOffer,
   qualifiesForWtpOffer,
 } from "../../lib/wtp";
 import { persistHubOffer, clearHubOffer } from "../../lib/wtp-persist";
 import { buildQuizMeta } from "../../lib/hub-quiz-labels";
+import QuizAnalyzing from "./QuizAnalyzing";
 
 const COURSE_CODES = ["A", "B", "C", "E", "F"];
 const targetField = (code) =>
@@ -180,40 +178,6 @@ function CoursePricing({ course, wtpOffer, wtpForThisCourse }) {
           Siirry kurssisivulle
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12h14M13 6l6 6-6 6" /></svg>
         </a>
-        {wtpPriceIncludesConsultation(wtpOffer.priceEur, wtpOffer.examCode) && (
-          <div className="rounded-xl border border-dashed border-gold/50 bg-gold/5 px-5 py-4">
-            <p className="font-heading text-sm font-bold text-navy">Haluatko kuulla lisää ennen päätöstä?</p>
-            <p className="mt-2 text-sm leading-relaxed text-navy/75">
-              Voit ostaa suoraan tai varata ilmaisen 15 min puhelun — käymme läpi paketin, masterclassit ja miten aloitat.
-            </p>
-            <p className="mt-2 text-xs leading-relaxed text-navy/60">
-              {wtpOffer.examCode === "F" ? (
-                <>Puhelun pitää Valintakoe F -opiskelija, joka saavutti valintakokeessa sellaisen pistemäärän, että olisi päässyt sisään kaikkiin Valintakoe F -yliopistoihin, ja toimii tutorina Valintakoe-sovelluksessamme.</>
-              ) : (
-                <>Puhelun pitää Valintakoe {wtpOffer.examCode} -valmennuksen asiantuntija — autamme valitsemaan sinulle sopivan paketin ja alun valmistautumiseen.</>
-              )}
-            </p>
-            <a
-              href={WTP_CALENDLY_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-pill border-2 border-navy bg-white px-5 py-3 font-heading text-sm font-bold text-navy transition-colors hover:bg-mist"
-            >
-              Varaa ilmainen 15 min puhelu
-              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
-            </a>
-            <p className="mt-3 text-xs text-navy/50">
-              Eikö kalenterista löydy sopivaa aikaa?{" "}
-              <a
-                href={`mailto:${wtpConsultationEmail(wtpOffer.examCode)}?subject=${encodeURIComponent("Kartoituspuhelu")}`}
-                className="underline underline-offset-2 hover:text-navy/70"
-              >
-                Sovi sähköpostilla
-              </a>{" "}
-              ({wtpConsultationEmail(wtpOffer.examCode)})
-            </p>
-          </div>
-        )}
       </div>
     );
   }
@@ -249,6 +213,7 @@ export default function Quiz() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [wtpOffer, setWtpOffer] = useState(null);
+  const [resultRevealed, setResultRevealed] = useState(false);
   const trafficUtm = useMemo(() => captureTrafficAttribution(), []);
 
   const algoCode = useMemo(() => algorithmCodeFromScores(scores), [scores]);
@@ -338,6 +303,7 @@ export default function Quiz() {
     setEmail("");
     setError(null);
     setWtpOffer(null);
+    setResultRevealed(false);
     setSubmitting(false);
     clearHubOffer();
   }
@@ -348,6 +314,7 @@ export default function Quiz() {
     if (!emailValid || submitting) return;
     setSubmitting(true);
     setError(null);
+    setResultRevealed(false);
     const leadPreferred =
       selectedTargets.includes("unknown")
         ? "unknown"
@@ -536,6 +503,13 @@ export default function Quiz() {
     const altHasOffer = showAltSuggestion && wtpOffer?.examCode === algorithmCourse?.code;
     const showAltOfferCard =
       altHasOffer || (primaryHasOffer && showAltSuggestion && algorithmCourse?.code !== wtpOffer?.examCode);
+
+    if (!resultRevealed) {
+      const destination = displayCourse?.field
+        ? `Valintakoe ${displayCode} — ${displayCourse.field}`
+        : null;
+      return <QuizAnalyzing destination={destination} onComplete={() => setResultRevealed(true)} />;
+    }
 
     return (
       <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
