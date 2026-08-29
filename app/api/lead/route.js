@@ -48,6 +48,19 @@ export async function POST(request) {
     painLabelFromKey(painKeyRaw);
   const quizMetaIn =
     data?.quizMeta && typeof data.quizMeta === "object" ? data.quizMeta : null;
+  const utmRaw = data?.utm && typeof data.utm === "object" ? data.utm : null;
+  const quizMetaBuilt =
+    quizMetaIn ||
+    buildQuizMeta({
+      painKey: painKeyRaw,
+      painLabel: painLabelRaw,
+      scores: data?.scores && typeof data.scores === "object" ? data.scores : null,
+      utm: utmRaw,
+    });
+  const quizMeta =
+    quizMetaIn && utmRaw && !quizMetaIn.utm
+      ? { ...quizMetaIn, utm: buildQuizMeta({ utm: utmRaw }).utm }
+      : quizMetaBuilt;
   const laudaturPriceEur =
     typeof data?.priceEur === "number" && data.priceEur >= 29 && data.priceEur <= 2000
       ? Math.round(data.priceEur)
@@ -66,13 +79,7 @@ export async function POST(request) {
     recommendedField: typeof data?.recommendedField === "string" ? data.recommendedField : null,
     painKey: painKeyRaw,
     painLabel: painLabelRaw,
-    quizMeta:
-      quizMetaIn ||
-      buildQuizMeta({
-        painKey: painKeyRaw,
-        painLabel: painLabelRaw,
-        scores: data?.scores && typeof data.scores === "object" ? data.scores : null,
-      }),
+    quizMeta,
     scores: data?.scores && typeof data.scores === "object" ? data.scores : null,
     wtpScore,
     offeredPriceEur: laudaturPriceEur ?? offeredPriceEur,

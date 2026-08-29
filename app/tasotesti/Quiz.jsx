@@ -29,6 +29,25 @@ const TARGET_OPTIONS = [
   { label: "En tiedä vielä", code: "unknown", exclusive: true },
 ];
 
+function captureTrafficAttribution() {
+  if (typeof window === "undefined") return null;
+  const params = new URLSearchParams(window.location.search);
+  const utm = {};
+  for (const key of ["source", "medium", "campaign", "term", "content"]) {
+    const v = params.get(`utm_${key}`);
+    if (v) utm[key] = v;
+  }
+  if (document.referrer) {
+    try {
+      const host = new URL(document.referrer).hostname;
+      if (host && host !== window.location.hostname) utm.referrer = host;
+    } catch {
+      /* ignore invalid referrer */
+    }
+  }
+  return Object.keys(utm).length ? utm : null;
+}
+
 const QUESTIONS = [
   {
     type: "pain",
@@ -230,6 +249,7 @@ export default function Quiz() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [wtpOffer, setWtpOffer] = useState(null);
+  const trafficUtm = useMemo(() => captureTrafficAttribution(), []);
 
   const algoCode = useMemo(() => algorithmCodeFromScores(scores), [scores]);
   const algorithmCourse = useMemo(() => (algoCode ? getCourse(algoCode) : null), [algoCode]);
@@ -343,6 +363,7 @@ export default function Quiz() {
       selectedTargets,
       algorithmCode: algoCode,
       scores,
+      utm: trafficUtm,
     });
     try {
       const res = await fetch("/api/lead", {
