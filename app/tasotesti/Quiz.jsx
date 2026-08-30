@@ -13,6 +13,7 @@ import {
   resolvePrimaryCode,
   recommendationsIncludeWtpOffer,
   qualifiesForWtpOffer,
+  wtpAlignedAltPriceEur,
 } from "../../lib/wtp";
 import { persistHubOffer, clearHubOffer, loadHubOffer } from "../../lib/wtp-persist";
 import { buildQuizMeta } from "../../lib/hub-quiz-labels";
@@ -237,6 +238,7 @@ export default function Quiz() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [wtpOffer, setWtpOffer] = useState(null);
+  const [altOffer, setAltOffer] = useState(null);
   const [resultRevealed, setResultRevealed] = useState(false);
   const trafficUtm = useMemo(() => captureTrafficAttribution(), []);
   const rootRef = useRef(null);
@@ -342,6 +344,7 @@ export default function Quiz() {
     setEmail("");
     setError(null);
     setWtpOffer(null);
+    setAltOffer(null);
     setResultRevealed(false);
     setSubmitting(false);
     clearHubOffer();
@@ -419,6 +422,37 @@ export default function Quiz() {
             liveMasterclasses: offerData.liveMasterclasses ?? false,
           });
           setWtpOffer({ ...offerData, vipPriceEur });
+
+          const altCode =
+            algorithmCourse &&
+            qualifiesForWtpOffer(algorithmCourse.code) &&
+            algorithmCourse.code !== offerExamCode
+              ? algorithmCourse.code
+              : null;
+          if (altCode) {
+            const altPriceEur = wtpAlignedAltPriceEur(offerData.priceEur, wtpScore);
+            const altRes = await fetch("/api/offer", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: email.trim(),
+                wtpScore,
+                examCode: altCode,
+                priceEur: altPriceEur,
+                silent: true,
+                painKey: pain?.key || null,
+                painLabel: pain?.label || null,
+                quizMeta,
+              }),
+            });
+            if (altRes.ok) {
+              const altData = await altRes.json();
+              setAltOffer({
+                ...altData,
+                vipPriceEur: altData.vipPriceEur ?? wtpScoreToVipPriceEur(altData.priceEur),
+              });
+            }
+          }
         }
       }
 
@@ -544,11 +578,12 @@ export default function Quiz() {
     const headingCode = chosenExamCode || displayCode;
     const headingField = chosenExamField || displayCourse?.field;
     const choseNonCourse = Boolean(chosenExamCode && !COURSE_CODES.includes(chosenExamCode));
-    const offerCourse = wtpOffer?.examCode ? getCourse(wtpOffer.examCode) : null;
     const primaryHasOffer = wtpOffer?.examCode === displayCode;
-    const altHasOffer = showAltSuggestion && wtpOffer?.examCode === algorithmCourse?.code;
-    const showAltOfferCard =
-      altHasOffer || (primaryHasOffer && showAltSuggestion && algorithmCourse?.code !== wtpOffer?.examCode);
+    const altCourse =
+      showAltSuggestion && algorithmCourse && algorithmCourse.code !== displayCode
+        ? algorithmCourse
+        : null;
+    const altHasOffer = Boolean(altOffer?.examCode && altCourse && altOffer.examCode === altCourse.code);
 
     if (!resultRevealed) {
       const destination = headingField
@@ -576,7 +611,7 @@ export default function Quiz() {
         <h2 className="mt-6 font-heading text-2xl font-extrabold leading-tight text-navy md:text-3xl">
           {headingCode && headingField ? (
             <>
-              {choseNonCourse ? "Valitsit: " : "Ensisijainen hakukohteesi: "}
+              {choseNonCourse ? "Valitsit: " : "Sinulle parhaiten sopiva: "}
               <span className="text-navy">Valintakoe {headingCode} — {headingField}</span>
             </>
           ) : (
@@ -591,14 +626,10 @@ export default function Quiz() {
         {displayCourse?.recommend && !choseNonCourse && (
           <p className="mt-3 text-[15px] leading-relaxed text-navy/80">{displayCourse.recommend}</p>
         )}
-
-        {showAltSuggestion && !showAltOfferCard && algorithmCourse && (
-          <div className="mt-5 rounded-xl border border-dashed border-line bg-white px-5 py-4">
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Testin perusteella myös sopisi</h3>
-            <p className="mt-1.5 text-[15px] text-navy/75">
-              Valintakoe {algorithmCourse.code} — {algorithmCourse.field}
-            </p>
-          </div>
+        {altCourse && !choseNonCourse && (
+          <p className="mt-3 text-[15px] leading-relaxed text-navy/80">
+            Persoonallisuuskysymysten perusteella sinulle sopisi myös Valintakoe {altCourse.code} — {altCourse.field}.
+          </p>
         )}
 
         {displayCourse && (
@@ -610,9 +641,9 @@ export default function Quiz() {
 
         {displayCourse && (
         <div className="mt-8 rounded-2xl border-2 border-gold bg-white p-6 ring-2 ring-gold/30">
-          {choseNonCourse && (
-            <p className="mb-4 font-heading text-xs font-bold uppercase tracking-wide text-navy/50">Lähin valmennuskurssimme</p>
-          )}
+          <p className="mb-4 font-heading text-xs font-bold uppercase tracking-wide text-navy/50">
+            {choseNonCourse ? "Lähin valmennuskurssimme" : "Sinulle parhaiten sopiva"}
+          </p>
           <div className="flex items-center gap-3">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{displayCourse.code}</span>
             <div>
@@ -645,31 +676,24 @@ export default function Quiz() {
         </div>
         )}
 
-        {altHasOffer && offerCourse && (
-          <div className="mt-6 rounded-2xl border-2 border-gold/60 bg-white p-6 ring-1 ring-gold/20">
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Myös sinulle sopiva vaihtoehto</h3>
-            <div className="mt-4 flex items-center gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{offerCourse.code}</span>
-              <div>
-                <h4 className="font-heading text-lg font-bold leading-tight text-navy">{offerCourse.title}</h4>
-                <p className="mt-0.5 text-sm text-navy/70">{offerCourse.field}</p>
-              </div>
-            </div>
-            <CoursePricing course={offerCourse} wtpOffer={wtpOffer} wtpForThisCourse />
-          </div>
-        )}
-
-        {primaryHasOffer && showAltSuggestion && algorithmCourse && algorithmCourse.code !== wtpOffer?.examCode && (
+        {altCourse && (
           <div className="mt-6 rounded-2xl border border-line bg-white p-6">
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Myös sinulle sopiva vaihtoehto</h3>
+            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Toinen vaihtoehto vastaustesi perusteella</h3>
             <div className="mt-4 flex items-center gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{algorithmCourse.code}</span>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{altCourse.code}</span>
               <div>
-                <h4 className="font-heading text-lg font-bold leading-tight text-navy">{algorithmCourse.title}</h4>
-                <p className="mt-0.5 text-sm text-navy/70">{algorithmCourse.field}</p>
+                <h4 className="font-heading text-lg font-bold leading-tight text-navy">{altCourse.title}</h4>
+                <p className="mt-0.5 text-sm text-navy/70">{altCourse.field}</p>
               </div>
             </div>
-            <CoursePricing course={algorithmCourse} wtpOffer={null} wtpForThisCourse={false} />
+            {altCourse.recommend && (
+              <p className="mt-3 text-sm leading-relaxed text-navy/75">{altCourse.recommend}</p>
+            )}
+            <CoursePricing
+              course={altCourse}
+              wtpOffer={altHasOffer ? altOffer : null}
+              wtpForThisCourse={altHasOffer}
+            />
           </div>
         )}
 

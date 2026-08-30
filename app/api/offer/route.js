@@ -51,9 +51,20 @@ export async function POST(request) {
     return Response.json({ error: "server_misconfigured" }, { status: 500 });
   }
 
-  const priceEur = wtpScoreToPriceEur(wtpScore, examCode);
-  const vipPriceEur = wtpScoreToVipPriceEur(priceEur);
+  const computedPriceEur = wtpScoreToPriceEur(wtpScore, examCode);
+  const requestedPrice = Number(data?.priceEur);
+  const minPrice = wtpOfferMinEur(examCode);
+  let priceEur = computedPriceEur;
+  if (Number.isFinite(requestedPrice)) {
+    const rounded = Math.round(requestedPrice);
+    if (rounded >= minPrice && rounded <= WTP_MAX_EUR) {
+      priceEur = rounded;
+    }
+  }
   const liveMasterclasses = wtpScoreIncludesLiveMasterclasses(wtpScore);
+  if (liveMasterclasses && priceEur < 549) priceEur = 549;
+  const vipPriceEur = wtpScoreToVipPriceEur(priceEur);
+  const silent = data?.silent === true;
   const amountCents = priceEur * 100;
   const vipAmountCents = vipPriceEur * 100;
 
@@ -76,7 +87,7 @@ export async function POST(request) {
 
   const streamConfig = streamFromExamCode(examCode);
   let dripEnrolled = false;
-  if (streamConfig) {
+  if (!silent && streamConfig) {
     const dripEligible = await canSendDrip(email, streamConfig.id);
     if (dripEligible.ok) {
       const quizMeta = data?.quizMeta && typeof data.quizMeta === "object" ? data.quizMeta : {};
@@ -120,20 +131,22 @@ export async function POST(request) {
     }
   }
 
-  const mail = await sendValintakoeQuizOfferEmail({
-    email,
-    examCode,
-    priceEur,
-    vipPriceEur,
-    checkoutUrl,
-    painKey: typeof data?.painKey === "string" ? data.painKey : data?.quizMeta?.pain_key || null,
-    painLabel: typeof data?.painLabel === "string" ? data.painLabel : data?.quizMeta?.pain_label || null,
-    recommendedField: typeof data?.recommendedField === "string" ? data.recommendedField : null,
-    preferredField: typeof data?.preferredField === "string" ? data.preferredField : null,
-  }).catch((err) => {
-    console.error("[EMAIL] first offer failed", err);
-    return { error: "send_exception" };
-  });
+  const mail = silent
+    ? { ok: false }
+    : await sendValintakoeQuizOfferEmail({
+        email,
+        examCode,
+        priceEur,
+        vipPriceEur,
+        checkoutUrl,
+        painKey: typeof data?.painKey === "string" ? data.painKey : data?.quizMeta?.pain_key || null,
+        painLabel: typeof data?.painLabel === "string" ? data.painLabel : data?.quizMeta?.pain_label || null,
+        recommendedField: typeof data?.recommendedField === "string" ? data.recommendedField : null,
+        preferredField: typeof data?.preferredField === "string" ? data.preferredField : null,
+      }).catch((err) => {
+        console.error("[EMAIL] first offer failed", err);
+        return { error: "send_exception" };
+      });
   if (mail?.error) console.error("[EMAIL] first offer rejected", mail);
 
   return Response.json({
