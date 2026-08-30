@@ -628,7 +628,7 @@ export default function Quiz() {
         )}
         {altCourse && !choseNonCourse && (
           <p className="mt-3 text-[15px] leading-relaxed text-navy/80">
-            Persoonallisuuskysymysten perusteella sinulle sopisi myös Valintakoe {altCourse.code} — {altCourse.field}.
+            Vastauksiesi perusteella myös Valintakoe {altCourse.code} — {altCourse.field} sopisi sinulle.
           </p>
         )}
 
@@ -678,7 +678,7 @@ export default function Quiz() {
 
         {altCourse && (
           <div className="mt-6 rounded-2xl border border-line bg-white p-6">
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Toinen vaihtoehto vastaustesi perusteella</h3>
+            <h3 className="font-heading text-sm font-bold uppercase tracking-wide text-navy/50">Myös sinulle sopiva</h3>
             <div className="mt-4 flex items-center gap-3">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-navy font-heading text-lg font-extrabold text-gold">{altCourse.code}</span>
               <div>
