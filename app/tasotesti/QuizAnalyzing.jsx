@@ -64,7 +64,7 @@ export default function QuizAnalyzing({ onComplete, destination = null }) {
   const activeIndex = STEPS.reduce((idx, step, i) => (progress >= step.at ? i : idx), 0);
 
   return (
-    <div className="rounded-2xl border border-line bg-white p-6 md:p-10">
+    <div className="rounded-2xl border border-line bg-white p-5 sm:p-6 md:p-10">
       <span className="inline-flex rounded-pill bg-navy/5 px-3 py-1 font-heading text-[11px] font-bold uppercase tracking-wider text-navy/60">
         Analyysi käynnissä
       </span>

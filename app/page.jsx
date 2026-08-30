@@ -62,7 +62,7 @@ function Hero() {
 /* ---------------- yhdeksän koetta (grid) ---------------- */
 function ExamGrid() {
   return (
-    <section className="bg-white py-14 md:py-20" aria-labelledby="kokeet-otsikko">
+    <section className="order-2 bg-white py-14 md:order-1 md:py-20" aria-labelledby="kokeet-otsikko">
       <div className="mx-auto max-w-site px-6 md:px-8">
         <h2 id="kokeet-otsikko" className="font-heading text-3xl font-extrabold tracking-tight text-navy md:text-4xl">
           Yhdeksän kansallista valintakoetta
@@ -101,8 +101,12 @@ function ExamGrid() {
 /* ---------------- tasotesti (upotettu etusivulle) ---------------- */
 function TasotestiSection() {
   return (
-    <section id="tasotesti" className="scroll-mt-24 bg-navy py-14 md:py-20" aria-labelledby="tasotesti-otsikko">
-      <div className="mx-auto max-w-3xl px-6 md:px-8">
+    <section
+      id="tasotesti"
+      className="isolate order-1 scroll-mt-3 bg-navy py-14 pb-[max(3.5rem,env(safe-area-inset-bottom))] md:order-2 md:py-20"
+      aria-labelledby="tasotesti-otsikko"
+    >
+      <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 md:px-8">
         <span className="inline-flex items-center gap-2 rounded-pill bg-gold px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-navy">
           Maksuton · 2 minuuttia
         </span>
@@ -180,8 +184,10 @@ export default function Page() {
       <main>
         <SiteNav activePath="/" />
         <Hero />
-        <ExamGrid />
-        <TasotestiSection />
+        <div className="flex flex-col">
+          <ExamGrid />
+          <TasotestiSection />
+        </div>
         <Preparation />
         <Faq />
         <SiteFooter />

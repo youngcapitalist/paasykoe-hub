@@ -11,6 +11,12 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Mobiili: estä selaimen scroll-anchoring heittämästä quizista kurssikortteihin. */
+#tasotesti,
+.quiz-root {
+  overflow-anchor: none;
+}
+
 body {
   @apply bg-white text-navy font-body antialiased;
 }

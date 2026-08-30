@@ -31,7 +31,7 @@ export default function TasotestiPage() {
       </header>
 
       <section className="relative overflow-hidden border-b border-line bg-white">
-        <div className="relative z-10 mx-auto max-w-3xl px-6 py-14 md:px-8 md:py-20">
+        <div className="relative z-10 mx-auto max-w-3xl px-4 py-14 pb-[max(3.5rem,env(safe-area-inset-bottom))] sm:px-6 md:px-8 md:py-20">
           <span className="inline-flex items-center gap-2 rounded-pill bg-navy px-3.5 py-1.5 font-heading text-xs font-bold uppercase tracking-wider text-gold">
             Maksuton · 2 minuuttia
           </span>
