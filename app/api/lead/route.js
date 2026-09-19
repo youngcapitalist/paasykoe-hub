@@ -14,7 +14,7 @@ import { painLabelFromKey, buildQuizMeta } from "../../../lib/hub-quiz-labels.js
 
 const COURSE_CODES = ["A", "B", "C", "E", "F"]; // alat, joille on kurssi (suositus)
 const TARGET_CODES = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "unknown"]; // hakukohde
-const LEAD_SOURCES = ["tasotesti", "laudaturpro", "todistusvalinta"];
+const LEAD_SOURCES = ["tasotesti", "laudaturpro", "laudaturpro_quiz", "todistusvalinta"];
 
 export async function POST(request) {
   let data;
