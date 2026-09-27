@@ -3,8 +3,9 @@ import {
   wtpScoreToPriceEur,
   wtpScoreToVipPriceEur,
   wtpScoreIncludesLiveMasterclasses,
-  WTP_MAX_EUR,
+  wtpBudgetCeilingEur,
   wtpOfferMinEur,
+  WTP_MAX_EUR,
   qualifiesForWtpOffer,
 } from "../../../lib/wtp";
 import { getCourse } from "../../../app/courses";
@@ -54,15 +55,16 @@ export async function POST(request) {
   const computedPriceEur = wtpScoreToPriceEur(wtpScore, examCode);
   const requestedPrice = Number(data?.priceEur);
   const minPrice = wtpOfferMinEur(examCode);
+  const ceiling = wtpBudgetCeilingEur(wtpScore, examCode);
   let priceEur = computedPriceEur;
   if (Number.isFinite(requestedPrice)) {
     const rounded = Math.round(requestedPrice);
-    if (rounded >= minPrice && rounded <= WTP_MAX_EUR) {
+    if (rounded >= minPrice && rounded <= ceiling) {
       priceEur = rounded;
     }
   }
+  priceEur = Math.min(priceEur, ceiling);
   const liveMasterclasses = wtpScoreIncludesLiveMasterclasses(wtpScore);
-  if (liveMasterclasses && priceEur < 549) priceEur = 549;
   const vipPriceEur = wtpScoreToVipPriceEur(priceEur);
   const silent = data?.silent === true;
   const amountCents = priceEur * 100;

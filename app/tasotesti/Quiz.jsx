@@ -430,7 +430,7 @@ export default function Quiz() {
               ? algorithmCourse.code
               : null;
           if (altCode) {
-            const altPriceEur = wtpAlignedAltPriceEur(offerData.priceEur, wtpScore);
+            const altPriceEur = wtpAlignedAltPriceEur(offerData.priceEur, wtpScore, altCode);
             const altRes = await fetch("/api/offer", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
