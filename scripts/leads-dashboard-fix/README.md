@@ -8,5 +8,9 @@ Lisää erillisen **Lataukset**-osion, jossa näkyy:
 - liikenne (Google / Bing / …)
 - email + aika
 
-Live-näkymä (ilman kurssirepon deploytä):
-`founder-leads` Edge Function — katso PR-kuvaus.
+## Live heti (ilman kurssirepoa)
+
+1. Hub: `/admin/liidit?token=…`
+2. Supabase Edge: `founder-leads?token=…`
+
+Token: `founder_dashboard_tokens` tai env `ADMIN_DASHBOARD_SECRET`.

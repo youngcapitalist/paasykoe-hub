@@ -48,8 +48,9 @@ const MAGNET_LABEL: Record<string, string> = {
 
 function examOf(lead: Lead): string {
   const fromMeta = lead.metadata?.exam;
-  if (typeof fromMeta === "string" && /koe\s*([a-fi])/i.test(fromMeta)) {
-    return fromMeta.replace(/.*koe\s*/i, "").trim().toUpperCase().slice(0, 1);
+  if (typeof fromMeta === "string") {
+    const m = fromMeta.match(/koe\s*([A-I])/i);
+    if (m) return m[1].toUpperCase();
   }
   return SOURCE_EXAM[lead.source] || "?";
 }
